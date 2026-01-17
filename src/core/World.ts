@@ -185,7 +185,10 @@ export class World {
     let population = 0;
     let totalEnergy = 0;
     let totalMutationRate = 0;
-    const colorSum = [0, 0, 0];
+    
+    // Color buckets for finding dominant color (quantize to 64-unit buckets)
+    const BUCKET_SIZE = 64;
+    const colorBuckets = new Map<string, { count: number; sumR: number; sumG: number; sumB: number }>();
 
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
@@ -194,9 +197,17 @@ export class World {
           population++;
           totalEnergy += cell.currentEnergy;
           totalMutationRate += cell.genome.mutationRate;
-          colorSum[0] += cell.genome.color[0];
-          colorSum[1] += cell.genome.color[1];
-          colorSum[2] += cell.genome.color[2];
+          
+          // Quantize color to bucket
+          const [r, g, b] = cell.genome.color;
+          const bucketKey = `${Math.floor(r / BUCKET_SIZE)},${Math.floor(g / BUCKET_SIZE)},${Math.floor(b / BUCKET_SIZE)}`;
+          
+          const bucket = colorBuckets.get(bucketKey) || { count: 0, sumR: 0, sumG: 0, sumB: 0 };
+          bucket.count++;
+          bucket.sumR += r;
+          bucket.sumG += g;
+          bucket.sumB += b;
+          colorBuckets.set(bucketKey, bucket);
         }
       }
     }
@@ -207,11 +218,23 @@ export class World {
     if (population > 0) {
       this._stats.avgEnergy = totalEnergy / population;
       this._stats.avgMutationRate = totalMutationRate / population;
-      this._stats.dominantColor = [
-        Math.round(colorSum[0] / population),
-        Math.round(colorSum[1] / population),
-        Math.round(colorSum[2] / population),
-      ];
+      
+      // Find the most populated color bucket
+      let maxBucket = { count: 0, sumR: 0, sumG: 0, sumB: 0 };
+      for (const bucket of colorBuckets.values()) {
+        if (bucket.count > maxBucket.count) {
+          maxBucket = bucket;
+        }
+      }
+      
+      // Dominant color is the average within the most common bucket
+      if (maxBucket.count > 0) {
+        this._stats.dominantColor = [
+          Math.round(maxBucket.sumR / maxBucket.count),
+          Math.round(maxBucket.sumG / maxBucket.count),
+          Math.round(maxBucket.sumB / maxBucket.count),
+        ];
+      }
     }
   }
 
