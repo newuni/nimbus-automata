@@ -5,7 +5,7 @@ import { useSimulation } from './hooks/useSimulation';
 import { Canvas, type CanvasHandle } from './components/Canvas';
 import { Stats } from './components/Stats';
 import { Controls } from './components/Controls';
-// import { EventLog } from './components/EventLog';
+import { EventLog } from './components/EventLog';
 import { RulesModal } from './components/RulesModal';
 
 function App() {
@@ -65,6 +65,8 @@ function App() {
           />
           
           <Stats stats={stats} />
+          
+          <EventLog stats={stats} />
           
           <div className="bg-zinc-900 rounded-lg p-3 text-xs text-zinc-500 space-y-2">
             <h2 className="text-zinc-400 font-semibold uppercase tracking-wider text-xs">
