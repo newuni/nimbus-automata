@@ -2,57 +2,153 @@
 
 **Game of Life con Evolución Genética** — Una versión evolucionada del autómata celular de Conway donde cada célula tiene su propio ADN.
 
-![Nimbus Automata](https://img.shields.io/badge/React-19-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue) ![Vite](https://img.shields.io/badge/Vite-7-purple) ![Tailwind](https://img.shields.io/badge/Tailwind-4-cyan)
+[![Demo](https://img.shields.io/badge/Demo-Live-brightgreen)](https://nimbus-automata.netlify.app/)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/nimbus-automata/deploy-status)](https://nimbus-automata.netlify.app/)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)
+![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite)
+![Tailwind](https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss)
+
+## 🎮 Demo
+
+**👉 [nimbus-automata.netlify.app](https://nimbus-automata.netlify.app/)**
+
+## ✨ Características
+
+- 🧬 **Genética real**: Cada célula tiene ADN único con 7 genes diferentes
+- 🔄 **Herencia**: Los hijos heredan genes de 2 padres mediante crossover
+- 🎲 **Mutaciones**: Los genes pueden mutar al reproducirse
+- 🎨 **Colores evolutivos**: Los colores se heredan y mezclan visualmente
+- ⚡ **Energía**: Las células tienen vida limitada y pueden robar energía
+- 📊 **Estadísticas en tiempo real**: Población, nacimientos, muertes, color dominante
+- 🖱️ **Interactivo**: Haz clic para crear/destruir células
+- 📱 **Responsive**: Funciona en desktop y móvil
 
 ## 🧬 ¿Qué lo hace diferente?
 
-En el Game of Life clásico, todas las células siguen las mismas reglas (2-3 vecinos para sobrevivir, 3 para nacer). En **Nimbus Automata**, cada célula tiene un **genoma único**:
+### Game of Life Clásico (Conway)
+Todas las células siguen las **mismas reglas**:
+- Supervivencia: 2-3 vecinos
+- Nacimiento: exactamente 3 vecinos
 
-| Gen | Descripción |
-|-----|-------------|
-| `survivalMin/Max` | Cuántos vecinos necesita para sobrevivir |
-| `birthCount` | Vecinos necesarios para que nazca una nueva célula |
-| `mutationRate` | Probabilidad de mutación al reproducirse |
-| `color` | RGB heredable que mezcla colores de los padres |
-| `energy` | Vida máxima de la célula |
-| `aggressiveness` | Roba energía de vecinos |
-| `resilience` | Resistencia a morir |
+### Nimbus Automata (Genético)
+Cada célula tiene su **propio genoma**:
 
-## 🔄 Herencia y Evolución
+| Gen | Clásico | Genético | Efecto |
+|-----|---------|----------|--------|
+| `survivalMin` | 2 | 1-4 | Mínimo de vecinos para sobrevivir |
+| `survivalMax` | 3 | 2-6 | Máximo de vecinos para sobrevivir |
+| `birthCount` | 3 | 2-5 | Vecinos necesarios para nacer |
+| `mutationRate` | — | 0-20% | Probabilidad de mutación |
+| `color` | — | RGB | Color heredable (se mezcla) |
+| `energy` | ∞ | 50-150 | Vida máxima |
+| `aggressiveness` | — | 0-30% | Roba energía de vecinos |
+| `resilience` | — | 30-70% | Resistencia a morir |
 
-1. Cuando nace una célula, hereda genes de **2 padres** (crossover)
-2. Cada gen puede **mutar** según la tasa de mutación
-3. Los colores se **mezclan** entre padres
-4. **Selección natural**: los genomas que sobreviven se propagan
+## 🔄 Ciclo de Vida
 
-## 🚀 Desarrollo
+```
+┌─────────────────────────────────────────────────────┐
+│  NACIMIENTO                                         │
+│  ├─ Se eligen 2 padres de los vecinos vivos        │
+│  ├─ Crossover: genes aleatorios de cada padre      │
+│  └─ Mutación: cada gen puede mutar                 │
+├─────────────────────────────────────────────────────┤
+│  VIDA                                               │
+│  ├─ Cada tick consume 1 energía                    │
+│  ├─ Agresividad roba energía de vecinos            │
+│  └─ Color visible con opacidad según energía       │
+├─────────────────────────────────────────────────────┤
+│  MUERTE                                             │
+│  ├─ Muy pocos vecinos (< survivalMin)              │
+│  ├─ Demasiados vecinos (> survivalMax)             │
+│  ├─ Energía agotada                                │
+│  └─ Resiliencia puede salvar temporalmente         │
+└─────────────────────────────────────────────────────┘
+```
+
+## 📊 Qué Observar
+
+- **🎨 Color dominante**: Evoluciona según qué linajes sobreviven mejor
+- **📈 Tasa de mutación**: ¿Las poblaciones estables tienen menos mutación?
+- **💥 Ciclos**: Observa patrones de boom y extinción
+- **🗺️ Especiación**: Pueden formarse "especies" con colores distintos en diferentes zonas
+
+## 🚀 Desarrollo Local
 
 ```bash
+# Clonar
+git clone https://github.com/newuni/nimbus-automata.git
+cd nimbus-automata
+
 # Instalar dependencias
 npm install
 
-# Desarrollo
+# Desarrollo (hot reload)
 npm run dev
 
 # Build producción
 npm run build
 
-# Preview
+# Preview del build
 npm run preview
 ```
 
-## 🌐 Deploy en Netlify
+## 🏗️ Tech Stack
 
-- **Build command:** `npm run build`
-- **Publish directory:** `dist`
+- **React 19** — UI declarativa
+- **TypeScript 5** — Tipado estático
+- **Vite 7** — Build ultrarrápido
+- **Tailwind CSS 4** — Estilos utility-first
+- **Canvas API** — Renderizado de alta performance
 
-## 📊 Qué observar
+## 📁 Estructura
 
-- **Color dominante**: Evoluciona según qué linajes sobreviven
-- **Tasa de mutación**: ¿Aumenta o disminuye con el tiempo?
-- **Población**: Ciclos de boom y extinción
-- **Zonas de color**: Pueden formarse "especies" en diferentes áreas
+```
+src/
+├── core/           # Lógica del juego
+│   ├── types.ts    # Tipos TypeScript
+│   ├── Genome.ts   # Crossover, mutación, fitness
+│   └── World.ts    # Simulación y grid
+├── components/     # UI React
+│   ├── Canvas.tsx  # Renderizado del grid
+│   ├── Controls.tsx
+│   ├── Stats.tsx
+│   └── RulesModal.tsx
+├── hooks/
+│   └── useSimulation.ts  # Estado y lógica de simulación
+└── App.tsx         # Componente principal
+```
+
+## 🌐 Deploy
+
+El proyecto incluye `netlify.toml` para deploy automático:
+
+```toml
+[build]
+  command = "npm run build"
+  publish = "dist"
+```
+
+Cualquier push a `main` despliega automáticamente.
+
+## 🤝 Contribuir
+
+¡Las contribuciones son bienvenidas! Algunas ideas:
+
+- [ ] Modo sandbox con reglas personalizables
+- [ ] Guardar/cargar estados
+- [ ] Patrones predefinidos (gliders, etc.)
+- [ ] Gráficas de evolución temporal
+- [ ] Web Workers para mejor performance
+- [ ] Modo "especies" con territorios
+
+## 📄 Licencia
+
+MIT © [newuni](https://github.com/newuni)
 
 ---
 
-Hecho con 🐙 por **Nimbus** & **newuni**
+<p align="center">
+  Hecho con 🐙 por <strong>Nimbus</strong> & <strong>newuni</strong>
+</p>
