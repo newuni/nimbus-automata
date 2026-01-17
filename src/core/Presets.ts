@@ -263,6 +263,143 @@ export const PRESETS: Preset[] = [
       return cells;
     },
   },
+  {
+    id: 'horizontal',
+    name: 'Horizontal',
+    emoji: '☰',
+    description: 'Capas horizontales de colores',
+    generate: (width, height, density) => {
+      const cells: PresetCell[] = [];
+      const numLayers = 5;
+      const layerHeight = height / numLayers;
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          if (Math.random() > density) continue;
+          
+          const layerIdx = Math.floor(y / layerHeight);
+          cells.push({ x, y, genome: genomeWithColor(...COLORS[layerIdx % COLORS.length]) });
+        }
+      }
+      return cells;
+    },
+  },
+  {
+    id: 'vertical',
+    name: 'Vertical',
+    emoji: '☷',
+    description: 'Capas verticales de colores',
+    generate: (width, height, density) => {
+      const cells: PresetCell[] = [];
+      const numLayers = 5;
+      const layerWidth = width / numLayers;
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          if (Math.random() > density) continue;
+          
+          const layerIdx = Math.floor(x / layerWidth);
+          cells.push({ x, y, genome: genomeWithColor(...COLORS[layerIdx % COLORS.length]) });
+        }
+      }
+      return cells;
+    },
+  },
+  {
+    id: 'diagonal',
+    name: 'Diagonal',
+    emoji: '⟋',
+    description: 'Franjas diagonales de colores',
+    generate: (width, height, density) => {
+      const cells: PresetCell[] = [];
+      const stripeWidth = 25;
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          if (Math.random() > density) continue;
+          
+          const stripeIdx = Math.floor((x + y) / stripeWidth);
+          cells.push({ x, y, genome: genomeWithColor(...COLORS[stripeIdx % COLORS.length]) });
+        }
+      }
+      return cells;
+    },
+  },
+  {
+    id: 'waves',
+    name: 'Ondas',
+    emoji: '〰',
+    description: 'Capas onduladas horizontales',
+    generate: (width, height, density) => {
+      const cells: PresetCell[] = [];
+      const numLayers = 5;
+      const layerHeight = height / numLayers;
+      const waveAmplitude = 10;
+      const waveFrequency = 0.05;
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          if (Math.random() > density) continue;
+          
+          const wave = Math.sin(x * waveFrequency) * waveAmplitude;
+          const adjustedY = y - wave;
+          const layerIdx = Math.floor(adjustedY / layerHeight);
+          cells.push({ x, y, genome: genomeWithColor(...COLORS[Math.abs(layerIdx) % COLORS.length]) });
+        }
+      }
+      return cells;
+    },
+  },
+  {
+    id: 'gradient',
+    name: 'Gradiente',
+    emoji: '▓',
+    description: 'Gradiente suave de colores',
+    generate: (width, height, density) => {
+      const cells: PresetCell[] = [];
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          if (Math.random() > density) continue;
+          
+          // Color based on position
+          const r = Math.floor((x / width) * 255);
+          const g = Math.floor((y / height) * 255);
+          const b = Math.floor(((width - x + height - y) / (width + height)) * 255);
+          
+          const genome = genomeWithColor(r, g, b);
+          cells.push({ x, y, genome });
+        }
+      }
+      return cells;
+    },
+  },
+  {
+    id: 'bullseye',
+    name: 'Diana',
+    emoji: '◉',
+    description: 'Círculos concéntricos de colores',
+    generate: (width, height, density) => {
+      const cells: PresetCell[] = [];
+      const cx = width / 2;
+      const cy = height / 2;
+      const ringWidth = Math.min(width, height) / 10;
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          if (Math.random() > density) continue;
+          
+          const dx = x - cx;
+          const dy = y - cy;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const ringIdx = Math.floor(dist / ringWidth);
+          
+          cells.push({ x, y, genome: genomeWithColor(...COLORS[ringIdx % COLORS.length]) });
+        }
+      }
+      return cells;
+    },
+  },
 ];
 
 export function getPresetById(id: string): Preset | undefined {
