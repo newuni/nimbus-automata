@@ -12,7 +12,7 @@ export function Stats({ stats }: StatsProps) {
   };
 
   return (
-    <div className="bg-zinc-900 rounded-lg p-3 space-y-2 font-mono text-sm">
+    <div className="bg-zinc-900 rounded-lg p-3 space-y-2 font-mono text-sm h-40">
       <h2 className="text-zinc-400 font-semibold text-xs uppercase tracking-wider">
         📊 Estadísticas
       </h2>
