@@ -41,50 +41,51 @@ function App() {
         </p>
       </header>
 
-      <main className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-4">
-        <div className="flex-1 flex items-start">
-          <Canvas
-            ref={canvasRef}
-            world={world}
-            cellSize={5}
-            onCellClick={toggleCell}
-          />
+      <main className="max-w-7xl mx-auto">
+        {/* Top row: Canvas + Controls */}
+        <div className="flex flex-col lg:flex-row gap-4 mb-4">
+          <div className="flex-1">
+            <Canvas
+              ref={canvasRef}
+              world={world}
+              cellSize={5}
+              onCellClick={toggleCell}
+            />
+          </div>
+
+          <aside className="w-full lg:w-56 space-y-3">
+            <Controls
+              isRunning={isRunning}
+              speed={speed}
+              onPlayPause={togglePlayPause}
+              onStep={step}
+              onReset={reset}
+              onClear={clear}
+              onSpeedChange={setSpeed}
+              onShowRules={() => setShowRules(true)}
+              onSnapshot={() => canvasRef.current?.takeSnapshot()}
+            />
+            
+            <div className="bg-zinc-900 rounded-lg p-3 text-xs text-zinc-500 space-y-2">
+              <h2 className="text-zinc-400 font-semibold uppercase tracking-wider text-xs">
+                🧬 ¿Qué es esto?
+              </h2>
+              <p>
+                <strong>Juego de la Vida</strong> con evolución genética. 
+                Cada célula tiene ADN único que hereda y muta.
+              </p>
+              <p className="text-emerald-400/70">
+                💡 Clic en "Reglas" para más info.
+              </p>
+            </div>
+          </aside>
         </div>
 
-        <aside className="w-full lg:w-72 space-y-3">
-          <Controls
-            isRunning={isRunning}
-            speed={speed}
-            onPlayPause={togglePlayPause}
-            onStep={step}
-            onReset={reset}
-            onClear={clear}
-            onSpeedChange={setSpeed}
-            onShowRules={() => setShowRules(true)}
-            onSnapshot={() => canvasRef.current?.takeSnapshot()}
-          />
-          
+        {/* Bottom row: Stats + Event Log */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Stats stats={stats} />
-          
           <EventLog stats={stats} />
-          
-          <div className="bg-zinc-900 rounded-lg p-3 text-xs text-zinc-500 space-y-2">
-            <h2 className="text-zinc-400 font-semibold uppercase tracking-wider text-xs">
-              🧬 ¿Qué es esto?
-            </h2>
-            <p>
-              Una versión evolucionada del <strong>Juego de la Vida</strong> donde 
-              cada célula tiene su propio <strong>ADN</strong>.
-            </p>
-            <p>
-              Los genes controlan las reglas de supervivencia, reproducción y 
-              apariencia. Las células heredan y mutan genes de sus padres.
-            </p>
-            <p className="text-emerald-400/70">
-              💡 Haz clic en "Ver Reglas" para entender cómo funciona.
-            </p>
-          </div>
-        </aside>
+        </div>
       </main>
 
       <footer className="max-w-7xl mx-auto mt-4 pt-4 border-t border-zinc-900 text-center text-zinc-600 text-xs space-y-1">
