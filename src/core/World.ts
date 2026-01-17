@@ -2,6 +2,7 @@
 
 import type { Cell, WorldConfig, WorldGrid, WorldStats, Genome } from './types';
 import { createRandomGenome, crossover, mutate, createDefaultGenome } from './Genome';
+import { selectCatastrophe, type Catastrophe } from './Catastrophe';
 
 // Helper functions
 function clamp(value: number, min: number, max: number): number {
@@ -19,11 +20,24 @@ const DEFAULT_CONFIG: WorldConfig = {
   tickRate: 100,
 };
 
+export interface CatastropheEvent {
+  generation: number;
+  catastrophe: Catastrophe;
+  affected: number;
+  dominantColor: [number, number, number];
+}
+
 export class World {
   private grid: WorldGrid;
   private config: WorldConfig;
   private _generation: number = 0;
   private _stats: WorldStats;
+  
+  // Catastrophe tracking
+  private _dominanceStreak: number = 0;
+  private _lastDominantColor: [number, number, number] = [0, 0, 0];
+  private _lastCatastrophe: CatastropheEvent | null = null;
+  private _catastropheHistory: CatastropheEvent[] = [];
 
   constructor(config: Partial<WorldConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
@@ -75,6 +89,12 @@ export class World {
   initialize(): void {
     const { width, height, initialDensity } = this.config;
     this._generation = 0;
+    
+    // Reset catastrophe tracking
+    this._dominanceStreak = 0;
+    this._lastDominantColor = [0, 0, 0];
+    this._lastCatastrophe = null;
+    this._catastropheHistory = [];
 
     // Create cluster seeds (random positions with strong colors)
     const NUM_CLUSTERS = 12 + Math.floor(Math.random() * 8); // 12-20 clusters
@@ -233,6 +253,53 @@ export class World {
     this._stats.births = births;
     this._stats.deaths = deaths;
     this.updateStats();
+    this.checkCatastrophe();
+  }
+
+  // Check if a catastrophe should occur
+  private checkCatastrophe(): void {
+    this._lastCatastrophe = null;
+    
+    // Check if dominant color changed
+    const colorDist = Math.abs(this._stats.dominantColor[0] - this._lastDominantColor[0]) +
+                      Math.abs(this._stats.dominantColor[1] - this._lastDominantColor[1]) +
+                      Math.abs(this._stats.dominantColor[2] - this._lastDominantColor[2]);
+    
+    if (colorDist < 60) {
+      // Same color still dominant
+      this._dominanceStreak++;
+    } else {
+      // New dominant color
+      this._dominanceStreak = 0;
+      this._lastDominantColor = [...this._stats.dominantColor] as [number, number, number];
+    }
+    
+    // Catastrophe probability increases with dominance streak
+    // Starts at gen 150, increases every 100 gens of dominance
+    if (this._dominanceStreak >= 150 && this._stats.population > 500) {
+      const baseChance = 0.005; // 0.5% base chance per tick
+      const streakBonus = Math.floor(this._dominanceStreak / 100) * 0.01; // +1% per 100 gens
+      const chance = Math.min(0.1, baseChance + streakBonus); // Cap at 10%
+      
+      if (Math.random() < chance) {
+        const catastrophe = selectCatastrophe();
+        const affected = catastrophe.apply(this.grid, this._stats.dominantColor);
+        
+        this._lastCatastrophe = {
+          generation: this._generation,
+          catastrophe,
+          affected,
+          dominantColor: [...this._stats.dominantColor] as [number, number, number],
+        };
+        this._catastropheHistory.push(this._lastCatastrophe);
+        
+        // Reset streak after catastrophe
+        this._dominanceStreak = 0;
+        
+        // Update stats after catastrophe
+        this.updateStats();
+      }
+    }
   }
 
   private updateStats(): void {
@@ -308,6 +375,19 @@ export class World {
 
   get height(): number {
     return this.config.height;
+  }
+
+  // Catastrophe getters
+  get lastCatastrophe(): CatastropheEvent | null {
+    return this._lastCatastrophe;
+  }
+
+  get catastropheHistory(): CatastropheEvent[] {
+    return [...this._catastropheHistory];
+  }
+
+  get dominanceStreak(): number {
+    return this._dominanceStreak;
   }
 
   // Get cell at position

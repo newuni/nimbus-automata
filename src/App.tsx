@@ -17,6 +17,7 @@ function App() {
     stats,
     isRunning,
     speed,
+    lastCatastrophe,
     step,
     togglePlayPause,
     reset,
@@ -84,7 +85,7 @@ function App() {
         {/* Bottom row: Stats + Event Log */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Stats stats={stats} />
-          <EventLog stats={stats} />
+          <EventLog stats={stats} lastCatastrophe={lastCatastrophe} />
         </div>
       </main>
 

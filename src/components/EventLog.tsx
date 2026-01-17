@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import type { WorldStats } from '../core/types';
+import type { CatastropheEvent } from '../core/World';
 
 interface Event {
   id: number;
@@ -9,10 +10,12 @@ interface Event {
   message: string;
   color: [number, number, number];
   population: number;
+  isCatastrophe?: boolean;
 }
 
 interface EventLogProps {
   stats: WorldStats;
+  lastCatastrophe: CatastropheEvent | null;
   maxEvents?: number;
 }
 
@@ -52,7 +55,7 @@ function colorName(color: [number, number, number]): string {
   return 'Color';
 }
 
-export function EventLog({ stats, maxEvents = 30 }: EventLogProps) {
+export function EventLog({ stats, lastCatastrophe, maxEvents = 30 }: EventLogProps) {
   const [events, setEvents] = useState<Event[]>([]);
   const prevStats = useRef<WorldStats | null>(null);
   const eventId = useRef(0);
@@ -132,6 +135,23 @@ export function EventLog({ stats, maxEvents = 30 }: EventLogProps) {
     prevStats.current = { ...stats };
   }, [stats, maxEvents]);
 
+  // Handle catastrophes
+  const lastCatastropheId = useRef<number | null>(null);
+  useEffect(() => {
+    if (lastCatastrophe && lastCatastrophe.generation !== lastCatastropheId.current) {
+      lastCatastropheId.current = lastCatastrophe.generation;
+      const newEvent: Event = {
+        id: eventId.current++,
+        generation: lastCatastrophe.generation,
+        message: `${lastCatastrophe.catastrophe.emoji} ${lastCatastrophe.catastrophe.name}: ${lastCatastrophe.affected} afectados`,
+        color: lastCatastrophe.dominantColor,
+        population: stats.population,
+        isCatastrophe: true,
+      };
+      setEvents(prev => [newEvent, ...prev].slice(0, maxEvents));
+    }
+  }, [lastCatastrophe, stats.population, maxEvents]);
+
   // Reset events when generation goes back to 0
   useEffect(() => {
     if (stats.generation === 0) {
@@ -153,13 +173,18 @@ export function EventLog({ stats, maxEvents = 30 }: EventLogProps) {
           <p className="text-zinc-600 italic">Esperando evolución...</p>
         ) : (
           events.map(event => (
-            <div key={event.id} className="flex items-center gap-2">
+            <div 
+              key={event.id} 
+              className={`flex items-center gap-2 ${event.isCatastrophe ? 'bg-red-950/50 -mx-2 px-2 py-0.5 rounded' : ''}`}
+            >
               <span className="text-zinc-600">[{event.generation}]</span>
               <div 
                 className="w-3 h-3 rounded-sm flex-shrink-0"
                 style={{ backgroundColor: `rgb(${event.color.join(',')})` }}
               />
-              <span className="text-zinc-300">{event.message}</span>
+              <span className={event.isCatastrophe ? 'text-red-300' : 'text-zinc-300'}>
+                {event.message}
+              </span>
               <span className="text-zinc-600 ml-auto">{event.population}</span>
             </div>
           ))

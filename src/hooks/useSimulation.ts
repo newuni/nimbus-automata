@@ -1,7 +1,7 @@
 // Nimbus Automata - Simulation Hook
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { World } from '../core/World';
+import { World, type CatastropheEvent } from '../core/World';
 import type { WorldStats, WorldConfig } from '../core/types';
 
 interface UseSimulationOptions extends Partial<WorldConfig> {
@@ -16,6 +16,7 @@ export function useSimulation(options: UseSimulationOptions = {}) {
   const [stats, setStats] = useState<WorldStats>(world.stats);
   const [isRunning, setIsRunning] = useState(false);
   const [speed, setSpeed] = useState(initialSpeed);
+  const [lastCatastrophe, setLastCatastrophe] = useState<CatastropheEvent | null>(null);
   
   const intervalRef = useRef<number | null>(null);
 
@@ -31,6 +32,7 @@ export function useSimulation(options: UseSimulationOptions = {}) {
     world.tick();
     setStats(world.stats);
     setGeneration(world.generation);
+    setLastCatastrophe(world.lastCatastrophe);
   }, [world]);
 
   // Start/stop simulation
@@ -78,6 +80,7 @@ export function useSimulation(options: UseSimulationOptions = {}) {
     world.initialize();
     setStats(world.stats);
     setGeneration(world.generation);
+    setLastCatastrophe(null);
   }, [world]);
 
   // Clear the world
@@ -101,6 +104,7 @@ export function useSimulation(options: UseSimulationOptions = {}) {
     stats,
     isRunning,
     speed,
+    lastCatastrophe,
     step,
     play,
     pause,
