@@ -8,6 +8,7 @@ import { Controls } from './components/Controls';
 import { EventLog } from './components/EventLog';
 import { RulesModal } from './components/RulesModal';
 import { Ecology } from './components/Ecology';
+import { PresetsSelector } from './components/Presets';
 
 function App() {
   const [showRules, setShowRules] = useState(false);
@@ -77,8 +78,9 @@ function App() {
           </aside>
         </div>
 
-        {/* Bottom row: Stats + Event Log */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Bottom row: Presets + Stats + Event Log */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <PresetsSelector onSelect={(preset) => reset(preset)} />
           <Stats stats={stats} />
           <EventLog stats={stats} lastCatastrophe={lastCatastrophe} />
         </div>

@@ -4,6 +4,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { World, type CatastropheEvent } from '../core/World';
 import type { WorldStats, WorldConfig } from '../core/types';
 import type { Catastrophe } from '../core/Catastrophe';
+import type { Preset } from '../core/Presets';
 
 interface UseSimulationOptions extends Partial<WorldConfig> {
   initialSpeed?: number;
@@ -75,10 +76,10 @@ export function useSimulation(options: UseSimulationOptions = {}) {
     };
   }, [isRunning, speed, step]);
 
-  // Reset to random initial state
-  const reset = useCallback(() => {
+  // Reset to initial state (with optional preset)
+  const reset = useCallback((preset?: Preset) => {
     setIsRunning(false);
-    world.initialize();
+    world.initialize(preset);
     setStats(world.stats);
     setGeneration(world.generation);
     setLastCatastrophe(null);

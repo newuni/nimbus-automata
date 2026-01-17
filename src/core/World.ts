@@ -3,6 +3,7 @@
 import type { Cell, WorldConfig, WorldGrid, WorldStats, Genome } from './types';
 import { createRandomGenome, crossover, mutate, createDefaultGenome } from './Genome';
 import { selectCatastrophe, type Catastrophe } from './Catastrophe';
+import { type Preset } from './Presets';
 
 // Helper functions
 function clamp(value: number, min: number, max: number): number {
@@ -85,8 +86,8 @@ export class World {
     };
   }
 
-  // Initialize world with random cells + color clusters
-  initialize(): void {
+  // Initialize world with random cells + color clusters (or preset)
+  initialize(preset?: Preset): void {
     const { width, height, initialDensity } = this.config;
     this._generation = 0;
     
@@ -96,28 +97,44 @@ export class World {
     this._lastCatastrophe = null;
     this._catastropheHistory = [];
 
-    // Create cluster seeds (random positions with strong colors)
-    const NUM_CLUSTERS = 12 + Math.floor(Math.random() * 8); // 12-20 clusters
-    const CLUSTER_RADIUS = 8 + Math.floor(Math.random() * 6); // 8-14 cells radius
+    // Clear grid first
+    this.grid = this.createEmptyGrid();
+
+    // If preset provided and has cells, use it
+    if (preset && preset.id !== 'random') {
+      const presetCells = preset.generate(width, height, initialDensity);
+      
+      if (presetCells.length > 0) {
+        for (const cell of presetCells) {
+          if (cell.x >= 0 && cell.x < width && cell.y >= 0 && cell.y < height) {
+            this.grid[cell.y][cell.x] = this.createAliveCell(cell.genome);
+          }
+        }
+        this.updateStats();
+        return;
+      }
+    }
+
+    // Default: random clusters
+    const NUM_CLUSTERS = 12 + Math.floor(Math.random() * 8);
+    const CLUSTER_RADIUS = 8 + Math.floor(Math.random() * 6);
     
     const clusters: { x: number; y: number; genome: Genome }[] = [];
     for (let i = 0; i < NUM_CLUSTERS; i++) {
       clusters.push({
         x: Math.floor(Math.random() * width),
         y: Math.floor(Math.random() * height),
-        genome: createRandomGenome(), // Each cluster has a distinct genome
+        genome: createRandomGenome(),
       });
     }
 
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         if (Math.random() < initialDensity) {
-          // Find if we're near a cluster
           let nearestCluster: typeof clusters[0] | null = null;
           let nearestDist = Infinity;
           
           for (const cluster of clusters) {
-            // Toroidal distance
             const dx = Math.min(Math.abs(x - cluster.x), width - Math.abs(x - cluster.x));
             const dy = Math.min(Math.abs(y - cluster.y), height - Math.abs(y - cluster.y));
             const dist = Math.sqrt(dx * dx + dy * dy);
@@ -128,13 +145,11 @@ export class World {
             }
           }
           
-          // Probability of inheriting cluster color based on distance
           const clusterInfluence = nearestCluster && nearestDist < CLUSTER_RADIUS
-            ? Math.pow(1 - nearestDist / CLUSTER_RADIUS, 2) // Quadratic falloff
+            ? Math.pow(1 - nearestDist / CLUSTER_RADIUS, 2)
             : 0;
           
           if (nearestCluster && Math.random() < clusterInfluence * 0.85) {
-            // Inherit cluster genome with small variation
             const genome = { ...nearestCluster.genome };
             genome.color = [
               clamp(genome.color[0] + randomDelta(20), 0, 255),
@@ -143,7 +158,6 @@ export class World {
             ] as [number, number, number];
             this.grid[y][x] = this.createAliveCell(genome);
           } else {
-            // Random cell (creates diversity between clusters)
             this.grid[y][x] = this.createAliveCell();
           }
         } else {
