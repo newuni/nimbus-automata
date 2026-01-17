@@ -1,73 +1,58 @@
-# React + TypeScript + Vite
+# 🐙 Nimbus Automata
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Game of Life con Evolución Genética** — Una versión evolucionada del autómata celular de Conway donde cada célula tiene su propio ADN.
 
-Currently, two official plugins are available:
+![Nimbus Automata](https://img.shields.io/badge/React-19-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue) ![Vite](https://img.shields.io/badge/Vite-7-purple) ![Tailwind](https://img.shields.io/badge/Tailwind-4-cyan)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🧬 ¿Qué lo hace diferente?
 
-## React Compiler
+En el Game of Life clásico, todas las células siguen las mismas reglas (2-3 vecinos para sobrevivir, 3 para nacer). En **Nimbus Automata**, cada célula tiene un **genoma único**:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Gen | Descripción |
+|-----|-------------|
+| `survivalMin/Max` | Cuántos vecinos necesita para sobrevivir |
+| `birthCount` | Vecinos necesarios para que nazca una nueva célula |
+| `mutationRate` | Probabilidad de mutación al reproducirse |
+| `color` | RGB heredable que mezcla colores de los padres |
+| `energy` | Vida máxima de la célula |
+| `aggressiveness` | Roba energía de vecinos |
+| `resilience` | Resistencia a morir |
 
-## Expanding the ESLint configuration
+## 🔄 Herencia y Evolución
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1. Cuando nace una célula, hereda genes de **2 padres** (crossover)
+2. Cada gen puede **mutar** según la tasa de mutación
+3. Los colores se **mezclan** entre padres
+4. **Selección natural**: los genomas que sobreviven se propagan
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🚀 Desarrollo
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+```bash
+# Instalar dependencias
+npm install
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Desarrollo
+npm run dev
+
+# Build producción
+npm run build
+
+# Preview
+npm run preview
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🌐 Deploy en Netlify
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- **Build command:** `npm run build`
+- **Publish directory:** `dist`
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 📊 Qué observar
+
+- **Color dominante**: Evoluciona según qué linajes sobreviven
+- **Tasa de mutación**: ¿Aumenta o disminuye con el tiempo?
+- **Población**: Ciclos de boom y extinción
+- **Zonas de color**: Pueden formarse "especies" en diferentes áreas
+
+---
+
+Hecho con 🐙 por **Nimbus** & **newuni**
