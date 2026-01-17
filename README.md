@@ -67,6 +67,24 @@ Cada célula tiene su **propio genoma**:
 └─────────────────────────────────────────────────────┘
 ```
 
+## 🌋 Eventos Catastróficos
+
+Cuando un color **domina demasiado tiempo** (150+ generaciones), aumenta la probabilidad de una catástrofe que afecta principalmente al dominante. *"Los imperios caen"*.
+
+| Emoji | Catástrofe | Efecto |
+|-------|------------|--------|
+| 🦠 | **Plaga** | 40% de muerte en células dominantes |
+| ☄️ | **Meteorito** | Destruye zona circular (radio 15-25) |
+| 🏜️ | **Sequía** | Drena 60% de energía del dominante |
+| 🚫 | **Infertilidad** | Dificulta reproducción del dominante |
+| ☢️ | **Radiación** | Mutaciones extremas + colores aleatorios |
+| 🥶 | **Era Glacial** | Mata a los de baja resiliencia/energía |
+
+**Mecánica:**
+- Probabilidad base: 0.5% por tick después de 150 gens de dominancia
+- +1% extra cada 100 generaciones adicionales (máx 10%)
+- Tras catástrofe, el contador se reinicia
+
 ## 📊 Qué Observar
 
 - **🎨 Color dominante**: Evoluciona según qué linajes sobreviven mejor

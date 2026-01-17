@@ -112,6 +112,30 @@ export function RulesModal({ isOpen, onClose }: RulesModalProps) {
         </section>
 
         <section className="space-y-3">
+          <h3 className="text-lg font-semibold text-red-400">
+            🌋 Eventos Catastróficos
+          </h3>
+          <div className="text-zinc-300 text-sm space-y-2">
+            <p>
+              Cuando un color <strong>domina demasiado tiempo</strong> (150+ generaciones), 
+              aumenta la probabilidad de una catástrofe que afecta principalmente al dominante.
+            </p>
+            <p className="text-zinc-400 text-xs">
+              "Los imperios caen" — como en la historia real.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <CatastropheCard emoji="🦠" name="Plaga" effect="40% muerte en dominantes" />
+            <CatastropheCard emoji="☄️" name="Meteorito" effect="Destruye zona circular" />
+            <CatastropheCard emoji="🏜️" name="Sequía" effect="Drena 60% energía" />
+            <CatastropheCard emoji="🚫" name="Infertilidad" effect="Dificulta reproducción" />
+            <CatastropheCard emoji="☢️" name="Radiación" effect="Mutaciones extremas" />
+            <CatastropheCard emoji="🥶" name="Era Glacial" effect="Mata a los débiles" />
+          </div>
+        </section>
+
+        <section className="space-y-3">
           <h3 className="text-lg font-semibold text-green-400">
             📊 Qué Observar
           </h3>
@@ -155,6 +179,18 @@ function GeneCard({
         <span className="text-zinc-500">Genético: <span className="text-purple-400">{genetic}</span></span>
       </div>
       <div className="text-zinc-400 text-xs">{effect}</div>
+    </div>
+  );
+}
+
+function CatastropheCard({ emoji, name, effect }: { emoji: string; name: string; effect: string }) {
+  return (
+    <div className="bg-red-950/30 rounded p-2 flex items-center gap-2">
+      <span className="text-lg">{emoji}</span>
+      <div>
+        <div className="text-red-300 font-medium">{name}</div>
+        <div className="text-zinc-500 text-xs">{effect}</div>
+      </div>
     </div>
   );
 }
