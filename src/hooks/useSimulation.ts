@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { World, type CatastropheEvent } from '../core/World';
 import type { WorldStats, WorldConfig } from '../core/types';
+import type { Catastrophe } from '../core/Catastrophe';
 
 interface UseSimulationOptions extends Partial<WorldConfig> {
   initialSpeed?: number;
@@ -98,6 +99,13 @@ export function useSimulation(options: UseSimulationOptions = {}) {
     setStats(world.stats);
   }, [world]);
 
+  // Trigger manual catastrophe
+  const triggerCatastrophe = useCallback((catastrophe: Catastrophe) => {
+    const event = world.triggerCatastrophe(catastrophe);
+    setStats(world.stats);
+    setLastCatastrophe(event);
+  }, [world]);
+
   return {
     world,
     generation,
@@ -113,5 +121,6 @@ export function useSimulation(options: UseSimulationOptions = {}) {
     clear,
     toggleCell,
     setSpeed,
+    triggerCatastrophe,
   };
 }

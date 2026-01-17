@@ -7,6 +7,7 @@ import { Stats } from './components/Stats';
 import { Controls } from './components/Controls';
 import { EventLog } from './components/EventLog';
 import { RulesModal } from './components/RulesModal';
+import { Ecology } from './components/Ecology';
 
 function App() {
   const [showRules, setShowRules] = useState(false);
@@ -24,6 +25,7 @@ function App() {
     clear,
     toggleCell,
     setSpeed,
+    triggerCatastrophe,
   } = useSimulation({
     width: 200,
     height: 120,
@@ -68,18 +70,10 @@ function App() {
               onSnapshot={() => canvasRef.current?.takeSnapshot()}
             />
             
-            <div className="bg-zinc-900 rounded-lg p-3 text-xs text-zinc-500 space-y-2">
-              <h2 className="text-zinc-400 font-semibold uppercase tracking-wider text-xs">
-                🧬 ¿Qué es esto?
-              </h2>
-              <p>
-                <strong>Juego de la Vida</strong> con evolución genética. 
-                Cada célula tiene ADN único que hereda y muta.
-              </p>
-              <p className="text-emerald-400/70">
-                💡 Clic en "Reglas" para más info.
-              </p>
-            </div>
+            <Ecology 
+              onTriggerCatastrophe={triggerCatastrophe}
+              disabled={stats.population === 0}
+            />
           </aside>
         </div>
 

@@ -423,4 +423,22 @@ export class World {
     this.grid = this.createEmptyGrid();
     this._generation = 0;
   }
+
+  // Manually trigger a catastrophe
+  triggerCatastrophe(catastrophe: { apply: (grid: WorldGrid, dominantColor: [number, number, number]) => number; name: string; emoji: string; id: string; description: string }): CatastropheEvent {
+    const affected = catastrophe.apply(this.grid, this._stats.dominantColor);
+    
+    const event: CatastropheEvent = {
+      generation: this._generation,
+      catastrophe,
+      affected,
+      dominantColor: [...this._stats.dominantColor] as [number, number, number],
+    };
+    
+    this._lastCatastrophe = event;
+    this._catastropheHistory.push(event);
+    this.updateStats();
+    
+    return event;
+  }
 }
