@@ -1,6 +1,6 @@
 // Nimbus Automata - Canvas Renderer
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useImperativeHandle, forwardRef } from 'react';
 import type { World } from '../core/World';
 
 interface CanvasProps {
@@ -10,13 +10,31 @@ interface CanvasProps {
   onCellClick?: (x: number, y: number) => void;
 }
 
-export function Canvas({ 
+export interface CanvasHandle {
+  takeSnapshot: () => void;
+}
+
+export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas({ 
   world, 
   cellSize = 6, 
   showGrid = false,
   onCellClick 
-}: CanvasProps) {
+}, ref) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Expose takeSnapshot to parent
+  useImperativeHandle(ref, () => ({
+    takeSnapshot: () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      
+      const link = document.createElement('a');
+      const timestamp = new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-');
+      link.download = `nimbus-automata-gen${world.generation}-${timestamp}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+  }), [world.generation]);
 
   const render = useCallback(() => {
     const canvas = canvasRef.current;
@@ -108,4 +126,4 @@ export function Canvas({
       style={{ imageRendering: 'pixelated' }}
     />
   );
-}
+});

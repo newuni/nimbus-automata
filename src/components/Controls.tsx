@@ -9,6 +9,7 @@ interface ControlsProps {
   onClear: () => void;
   onSpeedChange: (speed: number) => void;
   onShowRules: () => void;
+  onSnapshot: () => void;
 }
 
 export function Controls({
@@ -20,6 +21,7 @@ export function Controls({
   onClear,
   onSpeedChange,
   onShowRules,
+  onSnapshot,
 }: ControlsProps) {
   return (
     <div className="bg-zinc-900 rounded-lg p-3 space-y-3">
@@ -56,9 +58,14 @@ export function Controls({
         />
       </div>
 
-      <Button onClick={onShowRules} className="w-full">
-        📖 Ver Reglas
-      </Button>
+      <div className="flex gap-2">
+        <Button onClick={onShowRules}>
+          📖 Reglas
+        </Button>
+        <Button onClick={onSnapshot}>
+          📸 Captura
+        </Button>
+      </div>
     </div>
   );
 }

@@ -1,8 +1,8 @@
 // Nimbus Automata - Main App (Español)
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useSimulation } from './hooks/useSimulation';
-import { Canvas } from './components/Canvas';
+import { Canvas, type CanvasHandle } from './components/Canvas';
 import { Stats } from './components/Stats';
 import { Controls } from './components/Controls';
 // import { EventLog } from './components/EventLog';
@@ -10,6 +10,7 @@ import { RulesModal } from './components/RulesModal';
 
 function App() {
   const [showRules, setShowRules] = useState(false);
+  const canvasRef = useRef<CanvasHandle>(null);
   
   const {
     world,
@@ -43,6 +44,7 @@ function App() {
       <main className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-4">
         <div className="flex-1 flex items-start">
           <Canvas
+            ref={canvasRef}
             world={world}
             cellSize={5}
             onCellClick={toggleCell}
@@ -59,6 +61,7 @@ function App() {
             onClear={clear}
             onSpeedChange={setSpeed}
             onShowRules={() => setShowRules(true)}
+            onSnapshot={() => canvasRef.current?.takeSnapshot()}
           />
           
           <Stats stats={stats} />
