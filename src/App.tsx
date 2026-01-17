@@ -45,12 +45,13 @@ function App() {
       <main className="max-w-7xl mx-auto">
         {/* Top row: Canvas + Controls */}
         <div className="flex flex-col lg:flex-row gap-4 mb-4">
-          <div className="flex-1">
+          <div className="flex-1 overflow-x-auto">
             <Canvas
               ref={canvasRef}
               world={world}
               cellSize={5}
               onCellClick={toggleCell}
+              responsive
             />
           </div>
 

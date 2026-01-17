@@ -8,6 +8,7 @@ interface CanvasProps {
   cellSize?: number;
   showGrid?: boolean;
   onCellClick?: (x: number, y: number) => void;
+  responsive?: boolean;
 }
 
 export interface CanvasHandle {
@@ -18,9 +19,11 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas({
   world, 
   cellSize = 6, 
   showGrid = false,
-  onCellClick 
+  onCellClick,
+  responsive = false
 }, ref) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Expose takeSnapshot to parent
   useImperativeHandle(ref, () => ({
@@ -92,8 +95,13 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas({
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = Math.floor((e.clientX - rect.left) / cellSize);
-    const y = Math.floor((e.clientY - rect.top) / cellSize);
+    
+    // Account for CSS scaling
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    const x = Math.floor((e.clientX - rect.left) * scaleX / cellSize);
+    const y = Math.floor((e.clientY - rect.top) * scaleY / cellSize);
 
     if (x >= 0 && x < world.width && y >= 0 && y < world.height) {
       onCellClick(x, y);
@@ -116,14 +124,23 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas({
     render();
   }, [render]);
 
+  const canvasWidth = world.width * cellSize;
+  const canvasHeight = world.height * cellSize;
+
   return (
-    <canvas
-      ref={canvasRef}
-      width={world.width * cellSize}
-      height={world.height * cellSize}
-      onClick={handleClick}
-      className="border border-zinc-800 rounded-lg cursor-crosshair"
-      style={{ imageRendering: 'pixelated' }}
-    />
+    <div ref={containerRef} className={responsive ? 'w-full' : ''}>
+      <canvas
+        ref={canvasRef}
+        width={canvasWidth}
+        height={canvasHeight}
+        onClick={handleClick}
+        className="border border-zinc-800 rounded-lg cursor-crosshair"
+        style={{ 
+          imageRendering: 'pixelated',
+          maxWidth: responsive ? '100%' : undefined,
+          height: responsive ? 'auto' : undefined,
+        }}
+      />
+    </div>
   );
 });
