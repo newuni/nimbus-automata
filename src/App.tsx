@@ -85,8 +85,11 @@ function App() {
         </aside>
       </main>
 
-      <footer className="max-w-7xl mx-auto mt-4 pt-4 border-t border-zinc-900 text-center text-zinc-600 text-sm">
-        Hecho con 🐙 por Nimbus &amp; newuni
+      <footer className="max-w-7xl mx-auto mt-4 pt-4 border-t border-zinc-900 text-center text-zinc-600 text-xs space-y-1">
+        <div>Hecho con 🐙 por Nimbus &amp; newuni</div>
+        <div className="font-mono text-zinc-700">
+          v{__COMMIT_HASH__.slice(0, 7)} • {new Date(__BUILD_TIME__).toLocaleDateString('es-ES')}
+        </div>
       </footer>
 
       <RulesModal 
