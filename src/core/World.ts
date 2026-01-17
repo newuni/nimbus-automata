@@ -3,6 +3,15 @@
 import type { Cell, WorldConfig, WorldGrid, WorldStats, Genome } from './types';
 import { createRandomGenome, crossover, mutate, createDefaultGenome } from './Genome';
 
+// Helper functions
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+function randomDelta(max: number): number {
+  return (Math.random() * 2 - 1) * max;
+}
+
 const DEFAULT_CONFIG: WorldConfig = {
   width: 100,
   height: 100,
@@ -62,15 +71,61 @@ export class World {
     };
   }
 
-  // Initialize world with random cells
+  // Initialize world with random cells + color clusters
   initialize(): void {
     const { width, height, initialDensity } = this.config;
     this._generation = 0;
 
+    // Create cluster seeds (random positions with strong colors)
+    const NUM_CLUSTERS = 12 + Math.floor(Math.random() * 8); // 12-20 clusters
+    const CLUSTER_RADIUS = 8 + Math.floor(Math.random() * 6); // 8-14 cells radius
+    
+    const clusters: { x: number; y: number; genome: Genome }[] = [];
+    for (let i = 0; i < NUM_CLUSTERS; i++) {
+      clusters.push({
+        x: Math.floor(Math.random() * width),
+        y: Math.floor(Math.random() * height),
+        genome: createRandomGenome(), // Each cluster has a distinct genome
+      });
+    }
+
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         if (Math.random() < initialDensity) {
-          this.grid[y][x] = this.createAliveCell();
+          // Find if we're near a cluster
+          let nearestCluster: typeof clusters[0] | null = null;
+          let nearestDist = Infinity;
+          
+          for (const cluster of clusters) {
+            // Toroidal distance
+            const dx = Math.min(Math.abs(x - cluster.x), width - Math.abs(x - cluster.x));
+            const dy = Math.min(Math.abs(y - cluster.y), height - Math.abs(y - cluster.y));
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (dist < nearestDist) {
+              nearestDist = dist;
+              nearestCluster = cluster;
+            }
+          }
+          
+          // Probability of inheriting cluster color based on distance
+          const clusterInfluence = nearestCluster && nearestDist < CLUSTER_RADIUS
+            ? Math.pow(1 - nearestDist / CLUSTER_RADIUS, 2) // Quadratic falloff
+            : 0;
+          
+          if (nearestCluster && Math.random() < clusterInfluence * 0.85) {
+            // Inherit cluster genome with small variation
+            const genome = { ...nearestCluster.genome };
+            genome.color = [
+              clamp(genome.color[0] + randomDelta(20), 0, 255),
+              clamp(genome.color[1] + randomDelta(20), 0, 255),
+              clamp(genome.color[2] + randomDelta(20), 0, 255),
+            ] as [number, number, number];
+            this.grid[y][x] = this.createAliveCell(genome);
+          } else {
+            // Random cell (creates diversity between clusters)
+            this.grid[y][x] = this.createAliveCell();
+          }
         } else {
           this.grid[y][x] = this.createDeadCell();
         }
