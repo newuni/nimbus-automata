@@ -4,13 +4,15 @@ import { useState, useEffect, useRef } from 'react';
 import type { WorldStats } from '../core/types';
 import type { CatastropheEvent } from '../core/World';
 
+type EventType = 'catastrophe' | 'dominance' | 'population' | 'milestone' | 'extinction';
+
 interface Event {
   id: number;
   generation: number;
   message: string;
   color: [number, number, number];
   population: number;
-  isCatastrophe?: boolean;
+  type: EventType;
 }
 
 interface EventLogProps {
@@ -28,14 +30,12 @@ function colorName(color: [number, number, number]): string {
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   
-  // Check if it's grayish
   if (max - min < 40) {
     if (max > 180) return 'Blanco';
     if (max < 80) return 'Negro';
     return 'Gris';
   }
   
-  // Find dominant channel(s)
   if (r >= g && r >= b) {
     if (r - g < 30 && g > b + 30) return 'Amarillo';
     if (r - b < 30 && b > g + 30) return 'Magenta';
@@ -55,15 +55,35 @@ function colorName(color: [number, number, number]): string {
   return 'Color';
 }
 
-export function EventLog({ stats, lastCatastrophe, maxEvents = 30 }: EventLogProps) {
+const FILTER_CONFIG: { type: EventType; emoji: string; label: string }[] = [
+  { type: 'catastrophe', emoji: '🌋', label: 'Catástrofes' },
+  { type: 'dominance', emoji: '👑', label: 'Dominancia' },
+  { type: 'population', emoji: '📊', label: 'Población' },
+  { type: 'milestone', emoji: '🏁', label: 'Hitos' },
+  { type: 'extinction', emoji: '☠️', label: 'Extinción' },
+];
+
+export function EventLog({ stats, lastCatastrophe, maxEvents = 50 }: EventLogProps) {
   const [events, setEvents] = useState<Event[]>([]);
+  const [filters, setFilters] = useState<Set<EventType>>(new Set(['catastrophe', 'dominance', 'population', 'milestone', 'extinction']));
   const prevStats = useRef<WorldStats | null>(null);
   const eventId = useRef(0);
   const logRef = useRef<HTMLDivElement>(null);
 
+  const toggleFilter = (type: EventType) => {
+    setFilters(prev => {
+      const next = new Set(prev);
+      if (next.has(type)) {
+        next.delete(type);
+      } else {
+        next.add(type);
+      }
+      return next;
+    });
+  };
+
   useEffect(() => {
     if (!prevStats.current) {
-      // First run - log initial state
       if (stats.population > 0) {
         setEvents([{
           id: eventId.current++,
@@ -71,6 +91,7 @@ export function EventLog({ stats, lastCatastrophe, maxEvents = 30 }: EventLogPro
           message: `🏁 Inicio: ${colorName(stats.dominantColor)}`,
           color: stats.dominantColor,
           population: stats.population,
+          type: 'milestone',
         }]);
       }
       prevStats.current = { ...stats };
@@ -90,6 +111,7 @@ export function EventLog({ stats, lastCatastrophe, maxEvents = 30 }: EventLogPro
         message: `👑 ${colorName(stats.dominantColor)} domina`,
         color: stats.dominantColor,
         population: stats.population,
+        type: 'dominance',
       });
     }
 
@@ -103,6 +125,7 @@ export function EventLog({ stats, lastCatastrophe, maxEvents = 30 }: EventLogPro
         message: `${emoji} Población: ${stats.population}`,
         color: stats.dominantColor,
         population: stats.population,
+        type: 'population',
       });
     }
 
@@ -114,6 +137,7 @@ export function EventLog({ stats, lastCatastrophe, maxEvents = 30 }: EventLogPro
         message: '☠️ Extinción total',
         color: [128, 128, 128],
         population: 0,
+        type: 'extinction',
       });
     }
 
@@ -125,6 +149,7 @@ export function EventLog({ stats, lastCatastrophe, maxEvents = 30 }: EventLogPro
         message: `🏁 Gen ${stats.generation}`,
         color: stats.dominantColor,
         population: stats.population,
+        type: 'milestone',
       });
     }
 
@@ -143,10 +168,10 @@ export function EventLog({ stats, lastCatastrophe, maxEvents = 30 }: EventLogPro
       const newEvent: Event = {
         id: eventId.current++,
         generation: lastCatastrophe.generation,
-        message: `${lastCatastrophe.catastrophe.emoji} ${lastCatastrophe.catastrophe.name}: ${lastCatastrophe.affected} afectados`,
+        message: `${lastCatastrophe.catastrophe.emoji} ${lastCatastrophe.catastrophe.name}: ${lastCatastrophe.affected}`,
         color: lastCatastrophe.dominantColor,
         population: stats.population,
-        isCatastrophe: true,
+        type: 'catastrophe',
       };
       setEvents(prev => [newEvent, ...prev].slice(0, maxEvents));
     }
@@ -157,35 +182,58 @@ export function EventLog({ stats, lastCatastrophe, maxEvents = 30 }: EventLogPro
     if (stats.generation === 0) {
       setEvents([]);
       prevStats.current = null;
+      lastCatastropheId.current = null;
     }
   }, [stats.generation]);
 
+  const filteredEvents = events.filter(e => filters.has(e.type));
+
   return (
     <div className="bg-zinc-900 rounded-lg p-3 h-40 flex flex-col">
-      <h2 className="text-zinc-400 font-semibold text-xs uppercase tracking-wider mb-2">
-        📜 Historia
-      </h2>
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-zinc-400 font-semibold text-xs uppercase tracking-wider">
+          📜 Historia
+        </h2>
+        <div className="flex gap-1">
+          {FILTER_CONFIG.map(({ type, emoji, label }) => (
+            <button
+              key={type}
+              onClick={() => toggleFilter(type)}
+              title={label}
+              className={`text-xs px-1.5 py-0.5 rounded transition-colors ${
+                filters.has(type) 
+                  ? 'bg-zinc-700 text-white' 
+                  : 'bg-zinc-800 text-zinc-600 hover:text-zinc-400'
+              }`}
+            >
+              {emoji}
+            </button>
+          ))}
+        </div>
+      </div>
       <div 
         ref={logRef}
         className="flex-1 overflow-y-auto space-y-1 text-xs font-mono"
       >
-        {events.length === 0 ? (
-          <p className="text-zinc-600 italic">Esperando evolución...</p>
+        {filteredEvents.length === 0 ? (
+          <p className="text-zinc-600 italic">
+            {events.length === 0 ? 'Esperando evolución...' : 'Sin eventos con filtros actuales'}
+          </p>
         ) : (
-          events.map(event => (
+          filteredEvents.map(event => (
             <div 
               key={event.id} 
-              className={`flex items-center gap-2 ${event.isCatastrophe ? 'bg-red-950/50 -mx-2 px-2 py-0.5 rounded' : ''}`}
+              className={`flex items-center gap-2 ${event.type === 'catastrophe' ? 'bg-red-950/50 -mx-2 px-2 py-0.5 rounded' : ''}`}
             >
-              <span className="text-zinc-600">[{event.generation}]</span>
+              <span className="text-zinc-600 w-8 text-right flex-shrink-0">{event.generation}</span>
               <div 
                 className="w-3 h-3 rounded-sm flex-shrink-0"
                 style={{ backgroundColor: `rgb(${event.color.join(',')})` }}
               />
-              <span className={event.isCatastrophe ? 'text-red-300' : 'text-zinc-300'}>
+              <span className={event.type === 'catastrophe' ? 'text-red-300' : 'text-zinc-300'}>
                 {event.message}
               </span>
-              <span className="text-zinc-600 ml-auto">{event.population}</span>
+              <span className="text-zinc-600 ml-auto flex-shrink-0">{event.population}</span>
             </div>
           ))
         )}
