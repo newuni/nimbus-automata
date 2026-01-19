@@ -101,7 +101,7 @@ function App() {
   }
 
   return (
-    <div className="h-[100dvh] bg-zinc-950 text-zinc-100 flex flex-col overflow-hidden">
+    <div className="min-h-[100dvh] xl:h-[100dvh] bg-zinc-950 text-zinc-100 flex flex-col xl:overflow-hidden">
       {/* Header compacto */}
       <header className="shrink-0 px-3 py-2 border-b border-zinc-900">
         <div className="max-w-[1800px] mx-auto flex items-center justify-between">
@@ -116,12 +116,12 @@ function App() {
         </div>
       </header>
 
-      {/* Main content - flex-1 para ocupar todo el espacio */}
-      <main className="flex-1 min-h-0 p-2 sm:p-3">
-        <div className="h-full max-w-[1800px] mx-auto flex flex-col xl:flex-row gap-3">
+      {/* Main content */}
+      <main className="flex-1 xl:min-h-0 p-2 sm:p-3">
+        <div className="xl:h-full max-w-[1800px] mx-auto flex flex-col xl:flex-row gap-3">
           
-          {/* Canvas - ocupa todo el espacio restante */}
-          <div className="flex-1 min-h-0 min-w-0 flex items-center justify-center bg-zinc-900/30 rounded-lg p-2">
+          {/* Canvas */}
+          <div className="xl:flex-1 xl:min-h-0 min-w-0 flex items-center justify-center bg-zinc-900/30 rounded-lg p-2">
             <Canvas
               ref={canvasRef}
               world={world}
@@ -130,7 +130,7 @@ function App() {
             />
           </div>
 
-          {/* Sidebar derecha - scroll independiente */}
+          {/* Sidebar - en móvil fluye normal, en desktop scroll propio */}
           <aside className="xl:w-72 shrink-0 flex flex-col gap-2 xl:overflow-y-auto xl:max-h-full">
             {/* Controles principales */}
             <Controls
