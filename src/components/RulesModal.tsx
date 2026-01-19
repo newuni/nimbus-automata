@@ -98,6 +98,68 @@ export function RulesModal({ isOpen, onClose }: RulesModalProps) {
         </section>
 
         <section className="space-y-3">
+          <h3 className="text-lg font-semibold text-pink-400">
+            🦠 Genes de Comportamiento
+          </h3>
+          <div className="text-zinc-300 text-sm space-y-2">
+            <p>Cada célula tiene <strong>personalidad</strong> que afecta cómo interactúa:</p>
+          </div>
+          
+          <div className="grid gap-3 text-sm">
+            <GeneCard 
+              name="exploration"
+              classic="N/A"
+              genetic="30% - 80%"
+              effect="Tendencia a expandirse. Alto = nace con solo 2 vecinos"
+            />
+            <GeneCard 
+              name="cooperation"
+              classic="N/A"
+              genetic="0% - 80%"
+              effect="Comparte energía con células de color similar (>70% similitud)"
+            />
+            <GeneCard 
+              name="predation"
+              classic="N/A"
+              genetic="0% - 60%"
+              effect="Roba energía de células de color opuesto (<30% similitud)"
+            />
+          </div>
+        </section>
+
+        <section className="space-y-3">
+          <h3 className="text-lg font-semibold text-yellow-400">
+            🌱 Sistema de Recursos
+          </h3>
+          <div className="text-zinc-300 text-sm space-y-2">
+            <p>El mundo tiene <strong>partículas de comida</strong> (puntos amarillos):</p>
+            <ul className="list-disc list-inside space-y-1 text-zinc-400">
+              <li>Aparecen aleatoriamente según el hábitat</li>
+              <li>Las células las consumen para ganar energía</li>
+              <li>Cuando una célula muere, deja recursos (reciclaje)</li>
+              <li>Sin comida cercana = las células se debilitan</li>
+            </ul>
+          </div>
+        </section>
+
+        <section className="space-y-3">
+          <h3 className="text-lg font-semibold text-blue-400">
+            🗺️ Hábitats
+          </h3>
+          <div className="text-zinc-300 text-sm space-y-2">
+            <p>El mapa está dividido en <strong>5 zonas</strong> con diferentes condiciones:</p>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <HabitatCard emoji="💧" name="Oasis" position="Centro" effect="+50% energía, -50% mutación" />
+            <HabitatCard emoji="❄️" name="Glacial" position="↖ Arriba-Izq" effect="Lento pero resiliente" />
+            <HabitatCard emoji="☢️" name="Radiactivo" position="↗ Arriba-Der" effect="Mutación ×3" />
+            <HabitatCard emoji="🌋" name="Volcánico" position="↙ Abajo-Izq" effect="+80% energía, inestable" />
+            <HabitatCard emoji="🏜️" name="Desierto" position="↘ Abajo-Der" effect="-40% energía, presión alta" />
+          </div>
+        </section>
+
+        <section className="space-y-3">
           <h3 className="text-lg font-semibold text-amber-400">
             🔄 Reproducción y Herencia
           </h3>
@@ -189,6 +251,18 @@ function CatastropheCard({ emoji, name, effect }: { emoji: string; name: string;
       <span className="text-lg">{emoji}</span>
       <div>
         <div className="text-red-300 font-medium">{name}</div>
+        <div className="text-zinc-500 text-xs">{effect}</div>
+      </div>
+    </div>
+  );
+}
+
+function HabitatCard({ emoji, name, position, effect }: { emoji: string; name: string; position: string; effect: string }) {
+  return (
+    <div className="bg-blue-950/30 rounded p-2 flex items-center gap-2">
+      <span className="text-lg">{emoji}</span>
+      <div>
+        <div className="text-blue-300 font-medium">{name} <span className="text-zinc-500 text-xs">{position}</span></div>
         <div className="text-zinc-500 text-xs">{effect}</div>
       </div>
     </div>
