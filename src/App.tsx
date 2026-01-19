@@ -101,20 +101,21 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 p-4">
-      <header className="max-w-7xl mx-auto mb-4">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 p-2 sm:p-4">
+      <header className="max-w-[1800px] mx-auto mb-2 sm:mb-4">
+        <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
           🐙 Nimbus Automata
         </h1>
-        <p className="text-zinc-500 text-sm">
+        <p className="text-zinc-500 text-xs sm:text-sm">
           Juego de la Vida con Evolución Genética
         </p>
       </header>
 
-      <main className="max-w-7xl mx-auto">
-        {/* Top row: Canvas + Controls */}
-        <div className="flex flex-col lg:flex-row gap-4 mb-4">
-          <div className="flex-1 overflow-x-auto">
+      <main className="max-w-[1800px] mx-auto">
+        {/* Desktop: Canvas izquierda, todo lo demás derecha */}
+        <div className="flex flex-col xl:flex-row gap-3 sm:gap-4">
+          {/* Canvas - ocupa todo el espacio disponible */}
+          <div className="flex-1 min-w-0">
             <Canvas
               ref={canvasRef}
               world={world}
@@ -124,7 +125,9 @@ function App() {
             />
           </div>
 
-          <aside className="w-full lg:w-56 space-y-3">
+          {/* Sidebar derecha - en desktop es una columna, en móvil fluye normal */}
+          <aside className="w-full xl:w-72 flex flex-col gap-3">
+            {/* Controles principales */}
             <Controls
               isRunning={isRunning}
               speed={speed}
@@ -138,28 +141,33 @@ function App() {
               onZenMode={() => setIsZenMode(true)}
             />
             
-            <Ecology 
-              onTriggerCatastrophe={triggerCatastrophe}
-              disabled={stats.population === 0}
-            />
-            
-            <HabitatLegend />
-          </aside>
-        </div>
+            {/* Stats compactos */}
+            <Stats stats={stats} />
 
-        {/* Bottom row: Presets + Stats + Event Log */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <PresetsSelector onSelect={(preset) => reset(preset)} />
-          <Stats stats={stats} />
-          <EventLog stats={stats} lastCatastrophe={lastCatastrophe} />
+            {/* Grid 2 columnas para Ecología y Hábitats */}
+            <div className="grid grid-cols-2 xl:grid-cols-1 gap-3">
+              <Ecology 
+                onTriggerCatastrophe={triggerCatastrophe}
+                disabled={stats.population === 0}
+              />
+              <HabitatLegend />
+            </div>
+            
+            {/* Presets */}
+            <PresetsSelector onSelect={(preset) => reset(preset)} />
+            
+            {/* Event Log */}
+            <EventLog stats={stats} lastCatastrophe={lastCatastrophe} />
+          </aside>
         </div>
       </main>
 
-      <footer className="max-w-7xl mx-auto mt-4 pt-4 border-t border-zinc-900 text-center text-zinc-600 text-xs space-y-1">
-        <div>Hecho con 🐙 por Nimbus &amp; newuni</div>
-        <div className="font-mono text-zinc-700">
-          v{__COMMIT_HASH__.slice(0, 7)} • {new Date(__BUILD_TIME__).toLocaleDateString('es-ES')}
-        </div>
+      <footer className="max-w-[1800px] mx-auto mt-3 pt-3 border-t border-zinc-900 text-center text-zinc-600 text-xs">
+        <span>🐙 Nimbus & newuni</span>
+        <span className="mx-2">•</span>
+        <span className="font-mono text-zinc-700">
+          v{__COMMIT_HASH__.slice(0, 7)}
+        </span>
       </footer>
 
       <RulesModal 
