@@ -11,6 +11,7 @@ interface CanvasProps {
   onCellClick?: (x: number, y: number) => void;
   responsive?: boolean;
   fullscreen?: boolean;
+  fillContainer?: boolean;
 }
 
 export interface CanvasHandle {
@@ -23,7 +24,8 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas({
   showGrid = false,
   onCellClick,
   responsive = false,
-  fullscreen = false
+  fullscreen = false,
+  fillContainer = false
 }, ref) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -182,24 +184,42 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas({
   const canvasHeight = world.height * cellSize;
 
   // Estilos para modo fullscreen (con soporte móvil)
-  const fullscreenStyle: React.CSSProperties = fullscreen
-    ? {
+  const getCanvasStyle = (): React.CSSProperties => {
+    if (fullscreen) {
+      return {
         imageRendering: 'pixelated',
         width: '100vw',
-        height: '100dvh', // Dynamic viewport height para móviles
+        height: '100dvh',
         maxWidth: '100vw',
         maxHeight: '100dvh',
         objectFit: 'contain',
-        touchAction: 'none', // Prevenir gestos del navegador
-      }
-    : {
-        imageRendering: 'pixelated',
-        maxWidth: responsive ? '100%' : undefined,
-        height: responsive ? 'auto' : undefined,
+        touchAction: 'none',
       };
+    }
+    if (fillContainer) {
+      return {
+        imageRendering: 'pixelated',
+        width: '100%',
+        height: '100%',
+        objectFit: 'contain',
+      };
+    }
+    return {
+      imageRendering: 'pixelated',
+      maxWidth: responsive ? '100%' : undefined,
+      height: responsive ? 'auto' : undefined,
+    };
+  };
+
+  const getContainerClass = () => {
+    if (fullscreen) return '';
+    if (fillContainer) return 'w-full h-full min-h-[300px] xl:min-h-[500px]';
+    if (responsive) return 'w-full';
+    return '';
+  };
 
   return (
-    <div ref={containerRef} className={fullscreen ? '' : responsive ? 'w-full' : ''}>
+    <div ref={containerRef} className={getContainerClass()}>
       <canvas
         ref={canvasRef}
         width={canvasWidth}
@@ -209,7 +229,7 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas({
           ? "cursor-crosshair" 
           : "border border-zinc-800 rounded-lg cursor-crosshair"
         }
-        style={fullscreenStyle}
+        style={getCanvasStyle()}
       />
     </div>
   );

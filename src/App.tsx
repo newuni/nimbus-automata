@@ -115,13 +115,14 @@ function App() {
         {/* Desktop: Canvas izquierda, todo lo demás derecha */}
         <div className="flex flex-col xl:flex-row gap-3 sm:gap-4">
           {/* Canvas - ocupa todo el espacio disponible */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 flex items-start xl:items-stretch">
             <Canvas
               ref={canvasRef}
               world={world}
               cellSize={5}
               onCellClick={toggleCell}
               responsive
+              fillContainer
             />
           </div>
 
