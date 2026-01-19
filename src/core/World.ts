@@ -1,6 +1,6 @@
 // Nimbus Automata - World Simulation
 
-import type { Cell, WorldConfig, WorldGrid, WorldStats, Genome } from './types';
+import type { Cell, WorldConfig, WorldGrid, WorldStats, Genome, Resource } from './types';
 import { createRandomGenome, crossover, mutate, createDefaultGenome } from './Genome';
 import { selectCatastrophe, type Catastrophe } from './Catastrophe';
 import { type Preset } from './Presets';
@@ -13,6 +13,14 @@ function clamp(value: number, min: number, max: number): number {
 
 function randomDelta(max: number): number {
   return (Math.random() * 2 - 1) * max;
+}
+
+// Calculate color similarity (0 = opposite, 1 = identical)
+function colorSimilarity(c1: [number, number, number], c2: [number, number, number]): number {
+  const dr = Math.abs(c1[0] - c2[0]);
+  const dg = Math.abs(c1[1] - c2[1]);
+  const db = Math.abs(c1[2] - c2[2]);
+  return 1 - (dr + dg + db) / (255 * 3);
 }
 
 const DEFAULT_CONFIG: WorldConfig = {
@@ -35,6 +43,7 @@ export class World {
   private _generation: number = 0;
   private _stats: WorldStats;
   private _habitatMap: HabitatMap;
+  private _resources: Resource[] = [];
   
   // Catastrophe tracking
   private _dominanceStreak: number = 0;
@@ -47,6 +56,7 @@ export class World {
     this.grid = this.createEmptyGrid();
     this._stats = this.createEmptyStats();
     this._habitatMap = generateHabitatMap(this.config.width, this.config.height, 'zones');
+    this._resources = [];
   }
 
   private createEmptyGrid(): WorldGrid {
@@ -100,8 +110,9 @@ export class World {
     this._lastCatastrophe = null;
     this._catastropheHistory = [];
     
-    // Regenerar mapa de hábitats
+    // Regenerar mapa de hábitats y limpiar recursos
     this._habitatMap = generateHabitatMap(width, height, 'zones');
+    this._resources = [];
 
     // Clear grid first
     this.grid = this.createEmptyGrid();
@@ -202,6 +213,9 @@ export class World {
     let births = 0;
     let deaths = 0;
 
+    // Spawn new resources
+    this.spawnResources();
+
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         const cell = this.grid[y][x];
@@ -222,9 +236,32 @@ export class World {
             aliveCount >= adjSurvivalMin &&
             aliveCount <= adjSurvivalMax;
 
-          // Energy affected by habitat
-          const energyGain = (cell.genome.aggressiveness * aliveCount * 0.5) * habitat.energyMultiplier;
+          // Base energy cost
           const energyCost = 1 / habitat.energyMultiplier;
+          let energyGain = 0;
+          
+          // Consume nearby resource
+          const resourceEnergy = this.consumeResource(x, y);
+          energyGain += resourceEnergy * 0.5;
+          
+          // Behavioral interactions with neighbors
+          for (const neighbor of aliveNeighbors) {
+            const similarity = colorSimilarity(cell.genome.color, neighbor.genome.color);
+            
+            // Cooperation: share energy with similar colors
+            if (similarity > 0.7 && cell.genome.cooperation > 0.3) {
+              energyGain += cell.genome.cooperation * similarity * 2;
+            }
+            
+            // Predation: steal energy from opposite colors
+            if (similarity < 0.3 && cell.genome.predation > 0.3) {
+              const stolen = cell.genome.predation * (1 - similarity) * 3;
+              energyGain += stolen;
+            }
+          }
+          
+          // Legacy aggressiveness bonus
+          energyGain += (cell.genome.aggressiveness * aliveCount * 0.3) * habitat.energyMultiplier;
           
           // Energy and resilience check
           const energyDepleted = cell.currentEnergy <= 0;
@@ -235,7 +272,7 @@ export class World {
             newGrid[y][x] = {
               ...cell,
               age: cell.age + 1,
-              currentEnergy: cell.currentEnergy - energyCost + energyGain,
+              currentEnergy: Math.min(cell.genome.energy * 1.5, cell.currentEnergy - energyCost + energyGain),
             };
           } else if (resistsDeath && !energyDepleted) {
             // Cell resists death due to resilience
@@ -245,7 +282,14 @@ export class World {
               currentEnergy: cell.currentEnergy - (2 * energyCost),
             };
           } else {
-            // Cell dies
+            // Cell dies - leave some energy as resource
+            if (cell.currentEnergy > 10) {
+              this._resources.push({
+                x, y,
+                amount: Math.floor(cell.currentEnergy * 0.3),
+                type: 'food',
+              });
+            }
             newGrid[y][x] = this.createDeadCell();
             deaths++;
           }
@@ -259,7 +303,12 @@ export class World {
             );
             const adjBirthCount = Math.max(1, Math.min(8, avgBirthCount + habitat.birthModifier));
 
-            if (aliveCount === adjBirthCount || aliveCount === 3) {
+            // Exploration trait affects birth probability
+            const avgExploration = aliveNeighbors.reduce((sum, n) => sum + n.genome.exploration, 0) / aliveNeighbors.length;
+            const birthChance = aliveCount === adjBirthCount || aliveCount === 3;
+            const explorationBonus = avgExploration > 0.6 && aliveCount === 2;
+
+            if (birthChance || explorationBonus) {
               // New cell is born! Pick parents and crossover
               const parents = aliveNeighbors
                 .sort(() => Math.random() - 0.5)
@@ -278,6 +327,11 @@ export class World {
               // Energía inicial afectada por hábitat
               const newCell = this.createAliveCell(childGenome);
               newCell.currentEnergy *= habitat.energyMultiplier;
+              
+              // Consume resource at birth location for bonus energy
+              const birthResource = this.consumeResource(x, y);
+              newCell.currentEnergy += birthResource;
+              
               newGrid[y][x] = newCell;
               births++;
             }
@@ -430,6 +484,63 @@ export class World {
 
   get habitatMap(): HabitatMap {
     return this._habitatMap;
+  }
+
+  get resources(): Resource[] {
+    return this._resources;
+  }
+
+  // Spawn resources based on habitat
+  private spawnResources(): void {
+    const { width, height } = this.config;
+    const baseSpawnChance = 0.002; // Base chance per cell per tick
+    
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        // Skip if cell is alive
+        if (this.grid[y][x].alive) continue;
+        
+        // Get habitat multiplier for resource spawning
+        const habitat = getHabitatAt(this._habitatMap, x, y);
+        const spawnChance = baseSpawnChance * habitat.energyMultiplier;
+        
+        if (Math.random() < spawnChance) {
+          // Check if resource already exists here
+          const existing = this._resources.find(r => r.x === x && r.y === y);
+          if (existing) {
+            existing.amount = Math.min(existing.amount + 10, 50);
+          } else {
+            this._resources.push({
+              x,
+              y,
+              amount: 15 + Math.floor(Math.random() * 20),
+              type: 'food',
+            });
+          }
+        }
+      }
+    }
+    
+    // Limit total resources
+    if (this._resources.length > 500) {
+      this._resources = this._resources.slice(-500);
+    }
+  }
+
+  // Consume resource at position
+  private consumeResource(x: number, y: number): number {
+    const idx = this._resources.findIndex(r => r.x === x && r.y === y);
+    if (idx === -1) return 0;
+    
+    const resource = this._resources[idx];
+    const consumed = Math.min(resource.amount, 20);
+    resource.amount -= consumed;
+    
+    if (resource.amount <= 0) {
+      this._resources.splice(idx, 1);
+    }
+    
+    return consumed;
   }
 
   // Get cell at position

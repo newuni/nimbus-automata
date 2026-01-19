@@ -54,6 +54,21 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas({
     ctx.fillStyle = '#0a0a0a';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    // Draw resources (food particles)
+    const resources = world.resources;
+    for (const resource of resources) {
+      const intensity = Math.min(1, resource.amount / 30);
+      ctx.fillStyle = `rgba(255, 220, 100, ${intensity * 0.6})`;
+      const size = Math.max(1, Math.floor(cellSize * 0.4));
+      const offset = Math.floor((cellSize - size) / 2);
+      ctx.fillRect(
+        resource.x * cellSize + offset,
+        resource.y * cellSize + offset,
+        size,
+        size
+      );
+    }
+
     // Draw cells
     const grid = world.getGrid();
     for (let y = 0; y < height; y++) {

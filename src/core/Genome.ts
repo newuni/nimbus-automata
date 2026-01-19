@@ -12,6 +12,10 @@ const DEFAULT_GENOME: Genome = {
   energy: 100,
   aggressiveness: 0,
   resilience: 0.5,
+  // Behavioral traits
+  exploration: 0.5,
+  cooperation: 0.5,
+  predation: 0.3,
 };
 
 export function createRandomGenome(): Genome {
@@ -32,6 +36,10 @@ export function createRandomGenome(): Genome {
     energy: 50 + Math.floor(Math.random() * 100),          // 50-150
     aggressiveness: Math.random() * 0.3,                    // 0-0.3
     resilience: 0.3 + Math.random() * 0.4,                  // 0.3-0.7
+    // Behavioral traits
+    exploration: 0.3 + Math.random() * 0.5,                 // 0.3-0.8
+    cooperation: Math.random() * 0.8,                       // 0-0.8
+    predation: Math.random() * 0.6,                         // 0-0.6
   };
 }
 
@@ -108,6 +116,10 @@ export function crossover(parent1: Genome, parent2: Genome): Genome {
     energy: Math.floor((parent1.energy + parent2.energy) / 2),
     aggressiveness: (parent1.aggressiveness + parent2.aggressiveness) / 2,
     resilience: (parent1.resilience + parent2.resilience) / 2,
+    // Behavioral traits - inherit with slight variation
+    exploration: (parent1.exploration + parent2.exploration) / 2,
+    cooperation: (parent1.cooperation + parent2.cooperation) / 2,
+    predation: (parent1.predation + parent2.predation) / 2,
   };
 }
 
@@ -120,7 +132,7 @@ export function mutate(genome: Genome, mutationMultiplier: number = 1.0): Genome
   
   if (Math.random() < effectiveMutationRate) {
     // Pick a random gene to mutate
-    const gene = Math.floor(Math.random() * 8);
+    const gene = Math.floor(Math.random() * 11);
     
     switch (gene) {
       case 0:
@@ -161,6 +173,16 @@ export function mutate(genome: Genome, mutationMultiplier: number = 1.0): Genome
         break;
       case 7:
         mutated.resilience = clamp(mutated.resilience + randomDelta(0.1), 0, 1);
+        break;
+      // Behavioral traits
+      case 8:
+        mutated.exploration = clamp(mutated.exploration + randomDelta(0.15), 0, 1);
+        break;
+      case 9:
+        mutated.cooperation = clamp(mutated.cooperation + randomDelta(0.15), 0, 1);
+        break;
+      case 10:
+        mutated.predation = clamp(mutated.predation + randomDelta(0.15), 0, 1);
         break;
     }
   }

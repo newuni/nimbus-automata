@@ -14,6 +14,19 @@ export interface Genome {
   // Advanced traits
   aggressiveness: number;   // 0-1, chance to "steal" energy from neighbors
   resilience: number;       // 0-1, resistance to death
+  
+  // Behavioral traits (new)
+  exploration: number;      // 0-1, tendency to spread vs stay compact
+  cooperation: number;      // 0-1, share energy with similar colors
+  predation: number;        // 0-1, attack/consume cells of opposite colors
+}
+
+// Resource particle on the map
+export interface Resource {
+  x: number;
+  y: number;
+  amount: number;           // Energy available
+  type: 'food' | 'energy';
 }
 
 export interface Cell {
