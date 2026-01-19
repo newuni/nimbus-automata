@@ -9,6 +9,7 @@ interface CanvasProps {
   showGrid?: boolean;
   onCellClick?: (x: number, y: number) => void;
   responsive?: boolean;
+  fullscreen?: boolean;
 }
 
 export interface CanvasHandle {
@@ -20,7 +21,8 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas({
   cellSize = 6, 
   showGrid = false,
   onCellClick,
-  responsive = false
+  responsive = false,
+  fullscreen = false
 }, ref) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -127,19 +129,35 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas({
   const canvasWidth = world.width * cellSize;
   const canvasHeight = world.height * cellSize;
 
+  // Estilos para modo fullscreen (con soporte móvil)
+  const fullscreenStyle: React.CSSProperties = fullscreen
+    ? {
+        imageRendering: 'pixelated',
+        width: '100vw',
+        height: '100dvh', // Dynamic viewport height para móviles
+        maxWidth: '100vw',
+        maxHeight: '100dvh',
+        objectFit: 'contain',
+        touchAction: 'none', // Prevenir gestos del navegador
+      }
+    : {
+        imageRendering: 'pixelated',
+        maxWidth: responsive ? '100%' : undefined,
+        height: responsive ? 'auto' : undefined,
+      };
+
   return (
-    <div ref={containerRef} className={responsive ? 'w-full' : ''}>
+    <div ref={containerRef} className={fullscreen ? '' : responsive ? 'w-full' : ''}>
       <canvas
         ref={canvasRef}
         width={canvasWidth}
         height={canvasHeight}
         onClick={handleClick}
-        className="border border-zinc-800 rounded-lg cursor-crosshair"
-        style={{ 
-          imageRendering: 'pixelated',
-          maxWidth: responsive ? '100%' : undefined,
-          height: responsive ? 'auto' : undefined,
-        }}
+        className={fullscreen 
+          ? "cursor-crosshair" 
+          : "border border-zinc-800 rounded-lg cursor-crosshair"
+        }
+        style={fullscreenStyle}
       />
     </div>
   );

@@ -1,6 +1,6 @@
 // Nimbus Automata - Main App (Español)
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useSimulation } from './hooks/useSimulation';
 import { Canvas, type CanvasHandle } from './components/Canvas';
 import { Stats } from './components/Stats';
@@ -12,7 +12,19 @@ import { PresetsSelector } from './components/Presets';
 
 function App() {
   const [showRules, setShowRules] = useState(false);
+  const [isZenMode, setIsZenMode] = useState(false);
   const canvasRef = useRef<CanvasHandle>(null);
+
+  // ESC para salir del modo Zen
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isZenMode) {
+        setIsZenMode(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isZenMode]);
   
   const {
     world,
@@ -33,6 +45,59 @@ function App() {
     initialDensity: 0.25,
     initialSpeed: 15,
   });
+
+  // Modo Zen: canvas fullscreen (optimizado para móviles)
+  if (isZenMode) {
+    return (
+      <div 
+        className="fixed inset-0 bg-zinc-950 z-50 flex items-center justify-center overflow-hidden touch-none"
+        style={{ 
+          height: '100dvh', // Dynamic viewport height para móviles
+          paddingTop: 'env(safe-area-inset-top)',
+          paddingBottom: 'env(safe-area-inset-bottom)',
+          paddingLeft: 'env(safe-area-inset-left)',
+          paddingRight: 'env(safe-area-inset-right)',
+        }}
+      >
+        <Canvas
+          ref={canvasRef}
+          world={world}
+          cellSize={6}
+          onCellClick={toggleCell}
+          fullscreen
+        />
+        
+        {/* Controles flotantes en modo Zen - más grandes para touch */}
+        <div 
+          className="fixed top-4 right-4 flex gap-3 opacity-60 hover:opacity-100 active:opacity-100 transition-opacity"
+          style={{ top: 'max(1rem, env(safe-area-inset-top))' }}
+        >
+          <button
+            onClick={togglePlayPause}
+            className="p-4 sm:p-3 bg-zinc-800/90 hover:bg-zinc-700 active:bg-zinc-600 rounded-xl backdrop-blur text-xl sm:text-lg select-none"
+            title={isRunning ? 'Pausar' : 'Iniciar'}
+          >
+            {isRunning ? '⏸' : '▶'}
+          </button>
+          <button
+            onClick={() => setIsZenMode(false)}
+            className="p-4 sm:p-3 bg-zinc-800/90 hover:bg-zinc-700 active:bg-zinc-600 rounded-xl backdrop-blur text-xl sm:text-lg select-none"
+            title="Salir (ESC)"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Stats minimalista */}
+        <div 
+          className="fixed left-4 text-zinc-500 text-xs sm:text-sm font-mono opacity-50 select-none"
+          style={{ bottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+        >
+          Gen {stats.generation} • {stats.population} células
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 p-4">
@@ -69,6 +134,7 @@ function App() {
               onSpeedChange={setSpeed}
               onShowRules={() => setShowRules(true)}
               onSnapshot={() => canvasRef.current?.takeSnapshot()}
+              onZenMode={() => setIsZenMode(true)}
             />
             
             <Ecology 

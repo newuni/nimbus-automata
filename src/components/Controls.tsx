@@ -10,6 +10,7 @@ interface ControlsProps {
   onSpeedChange: (speed: number) => void;
   onShowRules: () => void;
   onSnapshot: () => void;
+  onZenMode: () => void;
 }
 
 export function Controls({
@@ -22,6 +23,7 @@ export function Controls({
   onSpeedChange,
   onShowRules,
   onSnapshot,
+  onZenMode,
 }: ControlsProps) {
   return (
     <div className="bg-zinc-900 rounded-lg p-3 space-y-3">
@@ -66,6 +68,10 @@ export function Controls({
           📸 Captura
         </Button>
       </div>
+
+      <Button onClick={onZenMode} className="w-full">
+        🖥 Pantalla completa
+      </Button>
     </div>
   );
 }
