@@ -111,11 +111,14 @@ export function crossover(parent1: Genome, parent2: Genome): Genome {
   };
 }
 
-// Mutation: randomly alter genes
-export function mutate(genome: Genome): Genome {
+// Mutation: randomly alter genes (mutationMultiplier from habitat)
+export function mutate(genome: Genome, mutationMultiplier: number = 1.0): Genome {
   const mutated = { ...genome, color: [...genome.color] as [number, number, number] };
   
-  if (Math.random() < genome.mutationRate) {
+  // Tasa de mutación ajustada por el hábitat
+  const effectiveMutationRate = Math.min(1, genome.mutationRate * mutationMultiplier);
+  
+  if (Math.random() < effectiveMutationRate) {
     // Pick a random gene to mutate
     const gene = Math.floor(Math.random() * 8);
     

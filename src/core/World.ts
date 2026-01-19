@@ -4,6 +4,7 @@ import type { Cell, WorldConfig, WorldGrid, WorldStats, Genome } from './types';
 import { createRandomGenome, crossover, mutate, createDefaultGenome } from './Genome';
 import { selectCatastrophe, type Catastrophe } from './Catastrophe';
 import { type Preset } from './Presets';
+import { generateHabitatMap, getHabitatAt, type HabitatMap } from './Habitat';
 
 // Helper functions
 function clamp(value: number, min: number, max: number): number {
@@ -33,6 +34,7 @@ export class World {
   private config: WorldConfig;
   private _generation: number = 0;
   private _stats: WorldStats;
+  private _habitatMap: HabitatMap;
   
   // Catastrophe tracking
   private _dominanceStreak: number = 0;
@@ -44,6 +46,7 @@ export class World {
     this.config = { ...DEFAULT_CONFIG, ...config };
     this.grid = this.createEmptyGrid();
     this._stats = this.createEmptyStats();
+    this._habitatMap = generateHabitatMap(this.config.width, this.config.height, 'zones');
   }
 
   private createEmptyGrid(): WorldGrid {
@@ -96,6 +99,9 @@ export class World {
     this._lastDominantColor = [0, 0, 0];
     this._lastCatastrophe = null;
     this._catastropheHistory = [];
+    
+    // Regenerar mapa de hábitats
+    this._habitatMap = generateHabitatMap(width, height, 'zones');
 
     // Clear grid first
     this.grid = this.createEmptyGrid();
@@ -202,13 +208,24 @@ export class World {
         const neighbors = this.getNeighbors(x, y);
         const aliveNeighbors = neighbors.filter((n) => n.alive);
         const aliveCount = aliveNeighbors.length;
+        
+        // Obtener el hábitat de esta celda
+        const habitat = getHabitatAt(this._habitatMap, x, y);
 
         if (cell.alive) {
-          // Check survival based on genome
+          // Ajustar reglas de supervivencia según hábitat
+          const adjSurvivalMin = Math.max(1, cell.genome.survivalMin + habitat.survivalModifier);
+          const adjSurvivalMax = Math.min(8, cell.genome.survivalMax + habitat.survivalModifier);
+          
+          // Check survival based on genome + habitat
           const survives =
-            aliveCount >= cell.genome.survivalMin &&
-            aliveCount <= cell.genome.survivalMax;
+            aliveCount >= adjSurvivalMin &&
+            aliveCount <= adjSurvivalMax;
 
+          // Energy affected by habitat
+          const energyGain = (cell.genome.aggressiveness * aliveCount * 0.5) * habitat.energyMultiplier;
+          const energyCost = 1 / habitat.energyMultiplier;
+          
           // Energy and resilience check
           const energyDepleted = cell.currentEnergy <= 0;
           const resistsDeath = Math.random() < cell.genome.resilience * 0.1;
@@ -218,14 +235,14 @@ export class World {
             newGrid[y][x] = {
               ...cell,
               age: cell.age + 1,
-              currentEnergy: cell.currentEnergy - 1 + (cell.genome.aggressiveness * aliveCount * 0.5),
+              currentEnergy: cell.currentEnergy - energyCost + energyGain,
             };
           } else if (resistsDeath && !energyDepleted) {
             // Cell resists death due to resilience
             newGrid[y][x] = {
               ...cell,
               age: cell.age + 1,
-              currentEnergy: cell.currentEnergy - 2,
+              currentEnergy: cell.currentEnergy - (2 * energyCost),
             };
           } else {
             // Cell dies
@@ -235,13 +252,14 @@ export class World {
         } else {
           // Dead cell - check for birth
           if (aliveNeighbors.length > 0) {
-            // Use the most common birth count among neighbors
+            // Use the most common birth count among neighbors, adjusted by habitat
             const birthCounts = aliveNeighbors.map((n) => n.genome.birthCount);
             const avgBirthCount = Math.round(
               birthCounts.reduce((a, b) => a + b, 0) / birthCounts.length
             );
+            const adjBirthCount = Math.max(1, Math.min(8, avgBirthCount + habitat.birthModifier));
 
-            if (aliveCount === avgBirthCount || aliveCount === 3) {
+            if (aliveCount === adjBirthCount || aliveCount === 3) {
               // New cell is born! Pick parents and crossover
               const parents = aliveNeighbors
                 .sort(() => Math.random() - 0.5)
@@ -249,12 +267,18 @@ export class World {
 
               let childGenome: Genome;
               if (parents.length >= 2) {
-                childGenome = mutate(crossover(parents[0].genome, parents[1].genome));
+                childGenome = mutate(
+                  crossover(parents[0].genome, parents[1].genome),
+                  habitat.mutationMultiplier
+                );
               } else {
-                childGenome = mutate({ ...parents[0].genome });
+                childGenome = mutate({ ...parents[0].genome }, habitat.mutationMultiplier);
               }
 
-              newGrid[y][x] = this.createAliveCell(childGenome);
+              // Energía inicial afectada por hábitat
+              const newCell = this.createAliveCell(childGenome);
+              newCell.currentEnergy *= habitat.energyMultiplier;
+              newGrid[y][x] = newCell;
               births++;
             }
           }
@@ -402,6 +426,10 @@ export class World {
 
   get dominanceStreak(): number {
     return this._dominanceStreak;
+  }
+
+  get habitatMap(): HabitatMap {
+    return this._habitatMap;
   }
 
   // Get cell at position

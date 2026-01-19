@@ -9,6 +9,7 @@ import { EventLog } from './components/EventLog';
 import { RulesModal } from './components/RulesModal';
 import { Ecology } from './components/Ecology';
 import { PresetsSelector } from './components/Presets';
+import { HabitatLegend } from './components/HabitatLegend';
 
 function App() {
   const [showRules, setShowRules] = useState(false);
@@ -141,6 +142,8 @@ function App() {
               onTriggerCatastrophe={triggerCatastrophe}
               disabled={stats.population === 0}
             />
+            
+            <HabitatLegend />
           </aside>
         </div>
 

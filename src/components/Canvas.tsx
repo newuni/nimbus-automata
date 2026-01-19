@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useCallback, useImperativeHandle, forwardRef } from 'react';
 import type { World } from '../core/World';
+import { HABITATS } from '../core/Habitat';
 
 interface CanvasProps {
   world: World;
@@ -50,10 +51,35 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas({
 
     const width = world.width;
     const height = world.height;
+    const habitatMap = world.habitatMap;
 
-    // Clear canvas
+    // Clear canvas with base color
     ctx.fillStyle = '#0a0a0a';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw habitat background (batched by habitat type for performance)
+    const habitatBatches = new Map<string, { x: number; y: number }[]>();
+    
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const habitatId = habitatMap[y]?.[x] ?? 'temperate';
+        if (!habitatBatches.has(habitatId)) {
+          habitatBatches.set(habitatId, []);
+        }
+        habitatBatches.get(habitatId)!.push({ x, y });
+      }
+    }
+
+    // Render each habitat type
+    for (const [habitatId, cells] of habitatBatches) {
+      const habitat = HABITATS[habitatId];
+      const lum = habitat?.bgLuminosity ?? 10;
+      ctx.fillStyle = `rgb(${lum}, ${lum}, ${Math.floor(lum * 1.1)})`;
+      
+      for (const { x, y } of cells) {
+        ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+      }
+    }
 
     // Draw cells
     const grid = world.getGrid();
