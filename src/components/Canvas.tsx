@@ -97,24 +97,12 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas({
     }
 
     // Draw habitat borders (where habitat changes)
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
     ctx.lineWidth = 1;
-    
-    // Track centroids for each habitat region
-    const regionCentroids = new Map<string, { sumX: number; sumY: number; count: number; id: string }>();
     
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
-        const currentHabitat = habitatMap[y]?.[x] ?? 'temperate';
-        
-        // Accumulate for centroid calculation
-        if (!regionCentroids.has(currentHabitat)) {
-          regionCentroids.set(currentHabitat, { sumX: 0, sumY: 0, count: 0, id: currentHabitat });
-        }
-        const region = regionCentroids.get(currentHabitat)!;
-        region.sumX += x;
-        region.sumY += y;
-        region.count++;
+        const currentHabitat = habitatMap[y]?.[x];
         
         // Check right neighbor
         if (x < width - 1 && habitatMap[y]?.[x + 1] !== currentHabitat) {
@@ -132,28 +120,6 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas({
           ctx.stroke();
         }
       }
-    }
-    
-    // Draw habitat emoji labels at centroids
-    const fontSize = Math.max(12, cellSize * 4);
-    ctx.font = `${fontSize}px sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    
-    for (const [habitatId, region] of regionCentroids) {
-      if (region.count < 100) continue; // Skip tiny regions
-      
-      const habitat = HABITATS[habitatId];
-      if (!habitat) continue;
-      
-      const centerX = (region.sumX / region.count) * cellSize;
-      const centerY = (region.sumY / region.count) * cellSize;
-      
-      // Draw emoji with shadow for visibility
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-      ctx.shadowBlur = 4;
-      ctx.fillText(habitat.emoji, centerX, centerY);
-      ctx.shadowBlur = 0;
     }
 
     // Draw grid lines (optional)
