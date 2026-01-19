@@ -101,15 +101,13 @@ function App() {
   }
 
   return (
-    <div className="min-h-[100dvh] xl:h-[100dvh] bg-zinc-950 text-zinc-100 flex flex-col xl:overflow-hidden">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100">
       {/* Header compacto */}
-      <header className="shrink-0 px-3 py-2 border-b border-zinc-900">
+      <header className="sticky top-0 z-10 bg-zinc-950/95 backdrop-blur px-3 py-2 border-b border-zinc-900">
         <div className="max-w-[1800px] mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-              🐙 Nimbus Automata
-            </h1>
-          </div>
+          <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+            🐙 Nimbus Automata
+          </h1>
           <div className="text-zinc-600 text-xs font-mono">
             v{__COMMIT_HASH__.slice(0, 7)}
           </div>
@@ -117,11 +115,11 @@ function App() {
       </header>
 
       {/* Main content */}
-      <main className="flex-1 xl:min-h-0 p-2 sm:p-3">
-        <div className="xl:h-full max-w-[1800px] mx-auto flex flex-col xl:flex-row gap-3">
+      <main className="p-2 sm:p-3">
+        <div className="max-w-[1800px] mx-auto flex flex-col xl:flex-row gap-3">
           
           {/* Canvas */}
-          <div className="xl:flex-1 xl:min-h-0 min-w-0 flex items-center justify-center bg-zinc-900/30 rounded-lg p-2">
+          <div className="flex-1 min-w-0">
             <Canvas
               ref={canvasRef}
               world={world}
@@ -130,9 +128,9 @@ function App() {
             />
           </div>
 
-          {/* Sidebar - en móvil fluye normal, en desktop scroll propio */}
-          <aside className="xl:w-72 shrink-0 flex flex-col gap-2 xl:overflow-y-auto xl:max-h-full">
-            {/* Controles principales */}
+          {/* Sidebar */}
+          <aside className="xl:w-72 shrink-0 flex flex-col gap-2">
+            {/* Controles */}
             <Controls
               isRunning={isRunning}
               speed={speed}
