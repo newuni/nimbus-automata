@@ -9,9 +9,7 @@ interface CanvasProps {
   cellSize?: number;
   showGrid?: boolean;
   onCellClick?: (x: number, y: number) => void;
-  responsive?: boolean;
   fullscreen?: boolean;
-  fillContainer?: boolean;
 }
 
 export interface CanvasHandle {
@@ -23,9 +21,7 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas({
   cellSize = 6, 
   showGrid = false,
   onCellClick,
-  responsive = false,
   fullscreen = false,
-  fillContainer = false
 }, ref) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -183,7 +179,7 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas({
   const canvasWidth = world.width * cellSize;
   const canvasHeight = world.height * cellSize;
 
-  // Estilos para modo fullscreen (con soporte móvil)
+  // Estilos para diferentes modos
   const getCanvasStyle = (): React.CSSProperties => {
     if (fullscreen) {
       return {
@@ -196,30 +192,17 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas({
         touchAction: 'none',
       };
     }
-    if (fillContainer) {
-      return {
-        imageRendering: 'pixelated',
-        width: '100%',
-        height: '100%',
-        objectFit: 'contain',
-      };
-    }
     return {
       imageRendering: 'pixelated',
-      maxWidth: responsive ? '100%' : undefined,
-      height: responsive ? 'auto' : undefined,
+      maxWidth: '100%',
+      maxHeight: '100%',
+      width: 'auto',
+      height: 'auto',
     };
   };
 
-  const getContainerClass = () => {
-    if (fullscreen) return '';
-    if (fillContainer) return 'w-full h-full min-h-[300px] xl:min-h-[500px]';
-    if (responsive) return 'w-full';
-    return '';
-  };
-
   return (
-    <div ref={containerRef} className={getContainerClass()}>
+    <div ref={containerRef} className={fullscreen ? '' : 'contents'}>
       <canvas
         ref={canvasRef}
         width={canvasWidth}
@@ -227,7 +210,7 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas({
         onClick={handleClick}
         className={fullscreen 
           ? "cursor-crosshair" 
-          : "border border-zinc-800 rounded-lg cursor-crosshair"
+          : "border border-zinc-800 rounded-lg cursor-crosshair max-w-full max-h-full"
         }
         style={getCanvasStyle()}
       />

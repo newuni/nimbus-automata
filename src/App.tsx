@@ -101,33 +101,37 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 p-2 sm:p-4">
-      <header className="max-w-[1800px] mx-auto mb-2 sm:mb-4">
-        <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-          🐙 Nimbus Automata
-        </h1>
-        <p className="text-zinc-500 text-xs sm:text-sm">
-          Juego de la Vida con Evolución Genética
-        </p>
+    <div className="h-[100dvh] bg-zinc-950 text-zinc-100 flex flex-col overflow-hidden">
+      {/* Header compacto */}
+      <header className="shrink-0 px-3 py-2 border-b border-zinc-900">
+        <div className="max-w-[1800px] mx-auto flex items-center justify-between">
+          <div>
+            <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+              🐙 Nimbus Automata
+            </h1>
+          </div>
+          <div className="text-zinc-600 text-xs font-mono">
+            v{__COMMIT_HASH__.slice(0, 7)}
+          </div>
+        </div>
       </header>
 
-      <main className="max-w-[1800px] mx-auto">
-        {/* Desktop: Canvas izquierda, todo lo demás derecha */}
-        <div className="flex flex-col xl:flex-row gap-3 sm:gap-4">
-          {/* Canvas - ocupa todo el espacio disponible */}
-          <div className="flex-1 min-w-0 flex items-start xl:items-stretch">
+      {/* Main content - flex-1 para ocupar todo el espacio */}
+      <main className="flex-1 min-h-0 p-2 sm:p-3">
+        <div className="h-full max-w-[1800px] mx-auto flex flex-col xl:flex-row gap-3">
+          
+          {/* Canvas - ocupa todo el espacio restante */}
+          <div className="flex-1 min-h-0 min-w-0 flex items-center justify-center bg-zinc-900/30 rounded-lg p-2">
             <Canvas
               ref={canvasRef}
               world={world}
               cellSize={5}
               onCellClick={toggleCell}
-              responsive
-              fillContainer
             />
           </div>
 
-          {/* Sidebar derecha - en desktop es una columna, en móvil fluye normal */}
-          <aside className="w-full xl:w-72 flex flex-col gap-3">
+          {/* Sidebar derecha - scroll independiente */}
+          <aside className="xl:w-72 shrink-0 flex flex-col gap-2 xl:overflow-y-auto xl:max-h-full">
             {/* Controles principales */}
             <Controls
               isRunning={isRunning}
@@ -142,11 +146,11 @@ function App() {
               onZenMode={() => setIsZenMode(true)}
             />
             
-            {/* Stats compactos */}
+            {/* Stats */}
             <Stats stats={stats} />
 
-            {/* Grid 2 columnas para Ecología y Hábitats */}
-            <div className="grid grid-cols-2 xl:grid-cols-1 gap-3">
+            {/* Grid 2 columnas en móvil, 1 en desktop */}
+            <div className="grid grid-cols-2 xl:grid-cols-1 gap-2">
               <Ecology 
                 onTriggerCatastrophe={triggerCatastrophe}
                 disabled={stats.population === 0}
@@ -162,14 +166,6 @@ function App() {
           </aside>
         </div>
       </main>
-
-      <footer className="max-w-[1800px] mx-auto mt-3 pt-3 border-t border-zinc-900 text-center text-zinc-600 text-xs">
-        <span>🐙 Nimbus & newuni</span>
-        <span className="mx-2">•</span>
-        <span className="font-mono text-zinc-700">
-          v{__COMMIT_HASH__.slice(0, 7)}
-        </span>
-      </footer>
 
       <RulesModal 
         isOpen={showRules} 
