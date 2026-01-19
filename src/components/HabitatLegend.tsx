@@ -14,8 +14,8 @@ export function HabitatLegend() {
         {habitats.map((h) => (
           <div 
             key={h.id} 
-            className="flex items-center gap-1.5 px-1.5 py-1 rounded"
-            style={{ backgroundColor: `rgb(${h.bgLuminosity}, ${h.bgLuminosity}, ${Math.floor(h.bgLuminosity * 1.1)})` }}
+            className="flex items-center gap-1.5 px-1.5 py-1 rounded border border-zinc-700"
+            style={{ backgroundColor: `rgb(${h.bgColor[0] * 2}, ${h.bgColor[1] * 2}, ${h.bgColor[2] * 2})` }}
           >
             <span>{h.emoji}</span>
             <span className="text-zinc-300 truncate">{h.name}</span>

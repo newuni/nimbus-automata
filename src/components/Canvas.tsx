@@ -70,11 +70,11 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas({
       }
     }
 
-    // Render each habitat type
+    // Render each habitat type with distinct colors
     for (const [habitatId, cells] of habitatBatches) {
       const habitat = HABITATS[habitatId];
-      const lum = habitat?.bgLuminosity ?? 10;
-      ctx.fillStyle = `rgb(${lum}, ${lum}, ${Math.floor(lum * 1.1)})`;
+      const [r, g, b] = habitat?.bgColor ?? [10, 10, 10];
+      ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
       
       for (const { x, y } of cells) {
         ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
@@ -92,6 +92,32 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas({
           const alpha = Math.max(0.3, cell.currentEnergy / cell.genome.energy);
           ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
           ctx.fillRect(x * cellSize, y * cellSize, cellSize - 1, cellSize - 1);
+        }
+      }
+    }
+
+    // Draw habitat borders (where habitat changes)
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.lineWidth = 1;
+    
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const currentHabitat = habitatMap[y]?.[x];
+        
+        // Check right neighbor
+        if (x < width - 1 && habitatMap[y]?.[x + 1] !== currentHabitat) {
+          ctx.beginPath();
+          ctx.moveTo((x + 1) * cellSize, y * cellSize);
+          ctx.lineTo((x + 1) * cellSize, (y + 1) * cellSize);
+          ctx.stroke();
+        }
+        
+        // Check bottom neighbor
+        if (y < height - 1 && habitatMap[y + 1]?.[x] !== currentHabitat) {
+          ctx.beginPath();
+          ctx.moveTo(x * cellSize, (y + 1) * cellSize);
+          ctx.lineTo((x + 1) * cellSize, (y + 1) * cellSize);
+          ctx.stroke();
         }
       }
     }

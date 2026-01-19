@@ -15,7 +15,8 @@ export interface Habitat {
 }
 
 // Definición de hábitats
-export const HABITATS: Record<string, Habitat> = {
+// bgColor: RGB para fondo sutil pero distinguible
+export const HABITATS: Record<string, Habitat & { bgColor: [number, number, number] }> = {
   temperate: {
     id: 'temperate',
     name: 'Templado',
@@ -26,6 +27,7 @@ export const HABITATS: Record<string, Habitat> = {
     survivalModifier: 0,
     birthModifier: 0,
     bgLuminosity: 10,
+    bgColor: [12, 18, 12], // Verde muy oscuro
   },
   oasis: {
     id: 'oasis',
@@ -37,6 +39,7 @@ export const HABITATS: Record<string, Habitat> = {
     survivalModifier: 0,
     birthModifier: 0,
     bgLuminosity: 18,
+    bgColor: [12, 18, 25], // Azul muy oscuro
   },
   desert: {
     id: 'desert',
@@ -45,9 +48,10 @@ export const HABITATS: Record<string, Habitat> = {
     description: 'Poca energía, alta presión selectiva',
     energyMultiplier: 0.6,
     mutationMultiplier: 1.2,
-    survivalModifier: -1, // Necesita menos vecinos para sobrevivir
+    survivalModifier: -1,
     birthModifier: 0,
     bgLuminosity: 6,
+    bgColor: [20, 15, 8], // Marrón/naranja muy oscuro
   },
   radioactive: {
     id: 'radioactive',
@@ -59,6 +63,7 @@ export const HABITATS: Record<string, Habitat> = {
     survivalModifier: 0,
     birthModifier: 0,
     bgLuminosity: 12,
+    bgColor: [20, 22, 8], // Verde radioactivo oscuro
   },
   volcanic: {
     id: 'volcanic',
@@ -67,9 +72,10 @@ export const HABITATS: Record<string, Habitat> = {
     description: 'Alta energía pero inestable',
     energyMultiplier: 1.8,
     mutationMultiplier: 1.5,
-    survivalModifier: 1, // Necesita más vecinos para sobrevivir
+    survivalModifier: 1,
     birthModifier: 1,
     bgLuminosity: 8,
+    bgColor: [25, 10, 8], // Rojo muy oscuro
   },
   frozen: {
     id: 'frozen',
@@ -79,8 +85,9 @@ export const HABITATS: Record<string, Habitat> = {
     energyMultiplier: 0.7,
     mutationMultiplier: 0.3,
     survivalModifier: -1,
-    birthModifier: -1, // Más difícil nacer
+    birthModifier: -1,
     bgLuminosity: 20,
+    bgColor: [18, 22, 28], // Azul hielo oscuro
   },
 };
 
