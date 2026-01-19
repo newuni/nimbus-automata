@@ -170,14 +170,12 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas({
     return {
       imageRendering: 'pixelated',
       maxWidth: '100%',
-      maxHeight: '100%',
-      width: 'auto',
       height: 'auto',
     };
   };
 
   return (
-    <div ref={containerRef} className={fullscreen ? '' : 'contents'}>
+    <div ref={containerRef} className={fullscreen ? '' : 'w-full overflow-x-auto'}>
       <canvas
         ref={canvasRef}
         width={canvasWidth}
@@ -185,7 +183,7 @@ export const Canvas = forwardRef<CanvasHandle, CanvasProps>(function Canvas({
         onClick={handleClick}
         className={fullscreen 
           ? "cursor-crosshair" 
-          : "border border-zinc-800 rounded-lg cursor-crosshair max-w-full max-h-full"
+          : "border border-zinc-800 rounded-lg cursor-crosshair"
         }
         style={getCanvasStyle()}
       />
