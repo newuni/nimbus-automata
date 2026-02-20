@@ -170,3 +170,15 @@ MIT © [newuni](https://github.com/newuni)
 <p align="center">
   Hecho con 🐙 por <strong>Nimbus</strong> & <strong>newuni</strong>
 </p>
+
+
+## Responsible Use
+
+This project is for educational/simulation purposes. Do not use it for illegal or abusive activity.
+
+See [`SECURITY.md`](./SECURITY.md).
+
+## Third-Party Services & Trademarks
+
+This project uses third-party libraries/frameworks (React, TypeScript, Vite, Tailwind).
+All trademarks belong to their respective owners; no affiliation/endorsement is implied.
