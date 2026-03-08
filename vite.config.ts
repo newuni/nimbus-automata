@@ -13,7 +13,10 @@ const commitHash = process.env.COMMIT_REF
     }
   })();
 
+const basePath = process.env.VITE_BASE_PATH || '/';
+
 export default defineConfig({
+  base: basePath,
   plugins: [react(), tailwindcss()],
   define: {
     __COMMIT_HASH__: JSON.stringify(commitHash),
